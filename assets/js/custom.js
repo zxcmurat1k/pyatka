@@ -71,3 +71,40 @@ function startCounters() {
 
 window.addEventListener('scroll', startCounters);
 window.addEventListener('load', startCounters);
+const contactForm = document.getElementById('contactForm');
+
+if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value
+        };
+
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Сообщение успешно отправлено!');
+                contactForm.reset();
+            } else {
+                alert('Ошибка при отправке сообщения.');
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка соединения с сервером.');
+        }
+    });
+}
