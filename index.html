@@ -11,7 +11,7 @@
 
 <body>
 
-<div class="sidebar" id="sidebar">
+<div class="sidebar collapsed" id="sidebar">
 <button class="toggle" id="toggle">☰</button>
 
 <a href="#about">О нас</a>
@@ -34,7 +34,7 @@
 </div>
 </div>
 
-    <div class="matrix-bg" id="matrix-bg"></div>
+    
     </header>
 
 <section id="about" class="section reveal">
@@ -43,39 +43,70 @@
 </section>
 
 <section id="skills" class="section reveal">
-<h2>Что изучили</h2>
-<div class="grid">
-<div class='card tech-card'>HTML5<div class='tech-preview'>FOTO1</div></div>
-<div class='card tech-card'>CSS3<div class='tech-preview'>FOTO2</div></div>
-<div class='card tech-card'>JavaScript<div class='tech-preview'>FOTO3</div></div>
-<div class='card tech-card'>Node.js<div class='tech-preview'>FOTO4</div></div>
-<div class='card tech-card'>Git/GitHub<div class='tech-preview'>FOTO5</div></div>
+    <h2>Что изучили</h2>
 
-<div class='card tech-card'>Git/GitHub<div class='tech-preview'>FOTO5</div></div>
-<div class='card tech-card'>APIs<div class='tech-preview'>FOTO6</div></div>
-<div class='card tech-card'>Databases<div class='tech-preview'>FOTO7</div></div>
-</div>
+    <div class="grid">
+
+        <div class="card tech-card">
+            HTML5
+            <div class="tech-preview">PHOTO 1</div>
+        </div>
+
+        <div class="card tech-card">
+            CSS3
+            <div class="tech-preview">PHOTO 2</div>
+        </div>
+
+        <div class="card tech-card">
+            JavaScript
+            <div class="tech-preview">PHOTO 3</div>
+        </div>
+
+        <div class="card tech-card">
+            Node.js
+            <div class="tech-preview">PHOTO 4</div>
+        </div>
+
+        <div class="card tech-card">
+            Git/GitHub
+            <div class="tech-preview">PHOTO 5</div>
+        </div>
+
+    </div>
 </section>
 
 
 <section id="team" class="section reveal">
-<h2>Наш вклад</h2>
-<div class="grid">
-<div class="card">
-<h3>Мурат Избасаров</h3>
-<p>Node.js (Backend разработка)</p>
-</div>
-<div class="card">
-<h3>Роман Шангареев</h3>
-<p>Фронтовик (Frontend разработка)</p>
-</div>
+    <h2>Наш вклад</h2>
 
-<div class='card tech-card'>Git/GitHub<div class='tech-preview'>FOTO5</div></div>
-<div class='card tech-card'>APIs<div class='tech-preview'>FOTO6</div></div>
-<div class='card tech-card'>Databases<div class='tech-preview'>FOTO7</div></div>
-</div>
+    <div class="grid">
+
+        <div class="card member-card">
+            <div class="member-photo">
+                PHOTO 6
+            </div>
+
+            <h3>Мурат Избасаров</h3>
+
+            <p>
+                Node.js (Backend разработка)
+            </p>
+        </div>
+
+        <div class="card member-card">
+            <div class="member-photo">
+                PHOTO 7
+            </div>
+
+            <h3>Роман Шангареев</h3>
+
+            <p>
+                Фронтовик
+            </p>
+        </div>
+
+    </div>
 </section>
-
 
 <section id="contact" class="section reveal">
 <h2>Контакты</h2>
@@ -97,46 +128,6 @@ anime({targets:'.section',opacity:[0,1],translateY:[50,0],delay:anime.stagger(15
 anime({targets:'.tech-card',rotateX:[90,0],delay:anime.stagger(100)});
 anime({targets:'.hero p',opacity:[0,1],duration:1200});
 anime({targets:'#typing',opacity:[0,1],duration:800});
-anime({targets:'.matrix-bg',opacity:[0,1],duration:500});
-
-// click interactive code burst
-const codes=[
-'print("hello world")',
-'console.log("hi")',
-'echo "hello"',
-'System.out.println("hi")',
-'printf("hello")',
-'cout << "hi"',
-'SELECT * FROM users',
-'git commit -m "ok"',
-'npm install',
-'return 0;'
-];
-
-document.addEventListener('click',(e)=>{
-for(let i=0;i<6;i++){
-const s=document.createElement('div');
-s.textContent=codes[Math.floor(Math.random()*codes.length)];
-s.style.position='fixed';
-s.style.left=e.clientX+'px';
-s.style.top=e.clientY+'px';
-s.style.color='#38bdf8';
-s.style.pointerEvents='none';
-document.body.appendChild(s);
-
-anime({
-targets:s,
-translateX:(Math.random()-0.5)*300,
-translateY:(Math.random()-0.5)*300,
-opacity:[1,0],
-duration:1500,
-easing:'easeOutExpo',
-complete:()=>s.remove()
-});
-}
-});
-
-});
 </script>
 </body>
 

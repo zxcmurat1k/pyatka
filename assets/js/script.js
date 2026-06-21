@@ -1,57 +1,46 @@
-
-const links=document.querySelectorAll('.sidebar a');
+// sidebar anime toggle
 const sidebar=document.getElementById('sidebar');
 const toggle=document.getElementById('toggle');
 
-toggle.addEventListener('click',()=>{
-sidebar.classList.toggle('collapsed');
-});
+let open=false;
 
-links.forEach(l=>{
-l.addEventListener('click',()=>{
-document.querySelector(l.getAttribute('href')).scrollIntoView({behavior:'smooth'});
-sidebar.classList.add('collapsed');
-});
-});
-
-// typing
-const words=['HTML5','CSS3','JavaScript','Node.js','Backend'];
-let i=0,j=0,del=false;
-const el=document.getElementById('typing');
-
-function type(){
-let w=words[i];
-el.textContent=w.substring(0,j);
-
-if(!del){
-j++;
-if(j>w.length){del=true;setTimeout(type,1000);return;}
+function animateSidebar(){
+if(open){
+anime({targets:'.sidebar',translateX:-180,duration:500,easing:'easeInOutQuad'});
 }else{
-j--;
-if(j===0){del=false;i=(i+1)%words.length;}
+anime({targets:'.sidebar',translateX:0,duration:500,easing:'easeInOutQuad'});
+}
+open=!open;
 }
 
-setTimeout(type,del?50:100);
-}
-type();
+toggle.addEventListener('click',animateSidebar);
 
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
+// smooth scroll
+document.querySelectorAll('.sidebar a').forEach(a=>{
 a.addEventListener('click',e=>{
+e.preventDefault();
 const id=a.getAttribute('href');
 const el=document.querySelector(id);
-if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth'});}
+if(el){
+anime({targets:document.documentElement,scrollTop:el.offsetTop,duration:800,easing:'easeInOutQuad'});
+sidebar.classList.add('collapsed');
+open=false;
+}
 });
 });
-const bg=document.getElementById('matrix-bg');
-if(bg){
-for(let i=0;i<80;i++){
- const d=document.createElement('div');
- d.className='bit';
- d.textContent=Math.random()>0.5?'1':'0';
- d.style.left=Math.random()*100+'vw';
- d.style.fontSize=(12+Math.random()*40)+'px';
- d.style.animationDuration=(8+Math.random()*15)+'s';
- d.style.animationDelay=(-Math.random()*20)+'s';
- bg.appendChild(d);
-}
-}
+
+// hero animation
+anime.timeline()
+.add({targets:'.hero h1',opacity:[0,1],translateY:[-40,0],duration:1200})
+.add({targets:'.badge',scale:[0,1],duration:600},'-=800')
+.add({targets:'.btn',opacity:[0,1],delay:anime.stagger(200)});
+
+// typing simple anime fade
+anime({targets:'#typing',opacity:[0,1],duration:1500,loop:true,direction:'alternate'});
+const words = [
+'HTML5',
+'CSS3',
+'JavaScript',
+'Node.js',
+'Git/GitHub'
+];
