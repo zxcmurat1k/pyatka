@@ -76,8 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const ashCanvas   = document.getElementById('ashCanvas');
   const ashCtx      = ashCanvas.getContext('2d');
 
-  let descTimer     = null;   // таймер печати описания
+  let descTimer     = null;    // таймер печати описания
   let currentActive = techItems[0]; // активный элемент при загрузке
+  let isSwitching   = false;   // блокировка повторного запуска анимации
 
   // ─── Утилита: печать текста символ за символом ─────────────────
   function typeText(el, text, speed, onDone) {
@@ -93,99 +94,165 @@ document.addEventListener('DOMContentLoaded', () => {
     tick();
   }
 
-  // ─── Эффект "пепел" — рассыпаем пиксели ───────────────────────
+  // ─── Эффект "пепел" — частицы разлетаются от центра картинки ───
+  // ВАЖНО: анимация частиц реализована на чистом requestAnimationFrame
+  // с собственным отслеживанием времени (performance.now()), БЕЗ anime.js.
+  // Раньше использовался anime() для прогресса частиц — но если вкладка
+  // на момент анимации теряла фокус (например, при переключении в
+  // DevTools), anime.js мог не вызывать complete() вовремя, что
+  // приводило к зависанию всей цепочки переключения. Самодостаточный
+  // rAF-цикл с проверкой elapsed-времени гарантированно завершится.
   function ashDissolve(img, onDone) {
+    cancelAnimationFrame(ashDissolve._raf);
+
     const wrap = img.parentElement;
     const W = wrap.clientWidth  || 300;
     const H = wrap.clientHeight || 160;
     ashCanvas.width  = W;
     ashCanvas.height = H;
-
-    // Рисуем текущее изображение на canvas
     ashCtx.clearRect(0, 0, W, H);
-    const iw = img.naturalWidth  || img.width  || 120;
-    const ih = img.naturalHeight || img.height || 120;
-    const scale = Math.min(W / iw, H / ih) * 0.75;
-    const dx = (W - iw * scale) / 2;
-    const dy = (H - ih * scale) / 2;
-    ashCtx.drawImage(img, dx, dy, iw * scale, ih * scale);
 
-    // Показываем canvas, скрываем img
-    anime({ targets: ashCanvas, opacity: [0, 1], duration: 80 });
-    img.style.clipPath = 'inset(100% 0 0 0)'; // убираем img
+    // Показываем canvas, скрываем исходную картинку
+    ashCanvas.style.transition = 'opacity 0.08s ease';
+    ashCanvas.style.opacity = '1';
+    img.style.clipPath = 'inset(100% 0 0 0)';
 
-    // Собираем частицы пикселей из canvas
-    const imageData = ashCtx.getImageData(0, 0, W, H);
+    // Генерируем частицы в области, где была видна картинка
+    const cx = W / 2, cy = H / 2;
+    const PARTICLE_COUNT = 70;
+    const accentColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--accent').trim() || '#38bdf8';
+
     const pixels = [];
-    const STEP = 4; // каждый 4й пиксель = менее нагрузки
-    for (let y = 0; y < H; y += STEP) {
-      for (let x = 0; x < W; x += STEP) {
-        const idx = (y * W + x) * 4;
-        const a = imageData.data[idx + 3];
-        if (a > 30) {
-          pixels.push({ x, y,
-            r: imageData.data[idx],
-            g: imageData.data[idx+1],
-            b: imageData.data[idx+2]
-          });
-        }
-      }
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      pixels.push({
+        x: cx + (Math.random() - 0.5) * (W * 0.6),
+        y: cy + (Math.random() - 0.5) * (H * 0.6),
+        dx: (Math.random() - 0.5) * 80,
+        dy: Math.random() * 60 + 10,
+        size: 2 + Math.random() * 3,
+        delay: Math.random() * 150 // мс, для лёгкого разброса старта
+      });
     }
 
-    // Анимируем рассыпание через anime.js (каждая частица — объект)
-    const objs = pixels.map(p => ({ px: p.x, py: p.y, alpha: 1 }));
-    let rafId;
+    const DURATION = 450; // мс
+    const start = performance.now();
+    let finished = false;
 
-    function draw() {
+    function draw(now) {
+      const elapsed = now - start;
       ashCtx.clearRect(0, 0, W, H);
-      objs.forEach((o, i) => {
-        const p = pixels[i];
-        ashCtx.globalAlpha = o.alpha;
-        ashCtx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
-        ashCtx.fillRect(o.px, o.py, STEP, STEP);
+      ashCtx.fillStyle = accentColor;
+
+      pixels.forEach(p => {
+        const t = Math.max(0, Math.min(1, (elapsed - p.delay) / DURATION));
+        const eased = t * t; // easeInQuad
+        const px = p.x + p.dx * eased;
+        const py = p.y + p.dy * eased;
+        const alpha = 1 - eased;
+        if (alpha > 0) {
+          ashCtx.globalAlpha = alpha;
+          ashCtx.fillRect(px, py, p.size, p.size);
+        }
       });
       ashCtx.globalAlpha = 1;
-      rafId = requestAnimationFrame(draw);
-    }
-    rafId = requestAnimationFrame(draw);
 
-    anime({
-      targets: objs,
-      px: (el, i) => pixels[i].x + (Math.random() - 0.5) * 80,
-      py: (el, i) => pixels[i].y + Math.random() * 60 + 10,
-      alpha: 0,
-      delay: anime.stagger(1, { from: 'random' }),
-      duration: 600,
-      easing: 'easeInQuad',
-      complete: () => {
-        cancelAnimationFrame(rafId);
-        anime({ targets: ashCanvas, opacity: 0, duration: 150, complete: onDone });
+      if (elapsed < DURATION + 150 && !finished) {
+        ashDissolve._raf = requestAnimationFrame(draw);
+      } else if (!finished) {
+        finished = true;
+        ashCanvas.style.opacity = '0';
+        // onDone вызываем сразу — не ждём CSS-transition,
+        // чтобы не зависеть ещё от одного асинхронного события
+        if (onDone) onDone();
       }
-    });
+    }
+    ashDissolve._raf = requestAnimationFrame(draw);
+
+    // Абсолютная страховка: даже если rAF почему-то не идёт
+    // (вкладка свёрнута/не в фокусе), завершаем через обычный таймер.
+    setTimeout(() => {
+      if (!finished) {
+        finished = true;
+        cancelAnimationFrame(ashDissolve._raf);
+        ashCtx.clearRect(0, 0, W, H);
+        ashCanvas.style.opacity = '0';
+        if (onDone) onDone();
+      }
+    }, DURATION + 400);
   }
 
   // ─── Эффект "рендер" — появление изображения построчно ─────────
-  function renderIn(img, src) {
-    img.src = src;
-    img.onload = () => {
-      // Сброс clipPath и анимируем "сканлайн" сверху вниз
+  // ВАЖНО: используем CSS transition вместо anime() с update-колбэком —
+  // CSS transition управляется самим браузером и завершается надёжно
+  // через событие 'transitionend', либо подстраховочный setTimeout,
+  // независимо от фокуса вкладки.
+  function renderIn(img, src, onDone) {
+    let settled = false;
+    const fallback = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        startReveal();
+      }
+    }, 1500);
+
+    function startReveal() {
+      clearTimeout(fallback);
+      // Сбрасываем без transition, чтобы сразу скрыть картинку
+      img.style.transition = 'none';
       img.style.clipPath = 'inset(100% 0 0 0)';
-      anime({
-        targets: img,
-        // Используем кастомное свойство через update
-        duration: 700,
-        easing: 'easeInOutQuad',
-        update: (anim) => {
-          const pct = Math.round(100 - anim.progress);
-          img.style.clipPath = `inset(${pct}% 0 0 0)`;
-        }
-      });
+
+      // Форсируем reflow, чтобы браузер зафиксировал стартовое состояние
+      // перед тем как мы включим transition и поменяем clip-path
+      void img.offsetWidth;
+
+      let finished = false;
+      function finishReveal() {
+        if (finished) return;
+        finished = true;
+        img.removeEventListener('transitionend', onTransitionEnd);
+        clearTimeout(revealFallback);
+        if (onDone) onDone();
+      }
+
+      function onTransitionEnd(e) {
+        if (e.propertyName === 'clip-path') finishReveal();
+      }
+      img.addEventListener('transitionend', onTransitionEnd);
+
+      img.style.transition = 'clip-path 0.7s ease-in-out';
+      img.style.clipPath = 'inset(0% 0 0 0)';
+
+      // Страховка на случай, если transitionend не сработает
+      // (например, если значение clip-path не успело реально измениться)
+      const revealFallback = setTimeout(finishReveal, 800);
+    }
+
+    img.onload = () => {
+      if (settled) return;
+      settled = true;
+      startReveal();
     };
+    img.onerror = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(fallback);
+      if (onDone) onDone(); // не виснем, если картинка не загрузилась
+    };
+
+    img.src = src;
   }
 
-  // ─── Переключение панели при наведении ─────────────────────────
+  // ─── Переключение панели при клике ──────────────────────────────
   function switchTech(item) {
-    if (item === currentActive) return;
+    if (item === currentActive || isSwitching) return;
+    isSwitching = true;
+
+    // Страховка: что бы ни случилось внутри (ошибка анимации,
+    // не загрузившаяся картинка и т.п.) — флаг точно снимется сам,
+    // и клики по другим кнопкам не "замрут" навсегда.
+    const safetyTimeout = setTimeout(() => { isSwitching = false; }, 3000);
+
     currentActive.classList.remove('active');
     item.classList.add('active');
     currentActive = item;
@@ -197,21 +264,40 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(descTimer);
     techDesc.textContent = '';
 
+    function finish() {
+      clearTimeout(safetyTimeout);
+      isSwitching = false;
+    }
+
     // Рассыпать старую картинку, затем отрендерить новую
-    ashDissolve(techImg, () => {
-      renderIn(techImg, newSrc);
-      // Печатаем текст с небольшой задержкой
-      setTimeout(() => typeText(techDesc, newText, 28), 300);
-    });
+    try {
+      ashDissolve(techImg, () => {
+        renderIn(techImg, newSrc, () => {
+          // Печатаем текст с небольшой задержкой после рендера картинки
+          setTimeout(() => {
+            typeText(techDesc, newText, 28, finish);
+          }, 200);
+        });
+      });
+    } catch (e) {
+      // Если эффект упал по любой причине — всё равно показываем новый контент
+      console.error('switchTech error:', e);
+      techImg.style.clipPath = 'inset(0% 0 0 0)';
+      techImg.src = newSrc;
+      typeText(techDesc, newText, 28, finish);
+    }
   }
 
+  // Клик надёжнее hover: не "залипает" при быстром движении мыши
+  // и не запускает анимацию повторно, пока мышь просто проезжает мимо.
   techItems.forEach(item => {
-    item.addEventListener('mouseenter', () => switchTech(item));
+    item.addEventListener('click', () => switchTech(item));
   });
 
   // Инициализация: рендерим первую картинку и начинаем печатать
-  renderIn(techImg, currentActive.dataset.img);
-  setTimeout(() => typeText(techDesc, currentActive.dataset.text, 28), 500);
+  renderIn(techImg, currentActive.dataset.img, () => {
+    setTimeout(() => typeText(techDesc, currentActive.dataset.text, 28), 200);
+  });
 
   /* ══════════════════════════════════════════════════
      5. THEME TOGGLE — anime.js вращение иконки

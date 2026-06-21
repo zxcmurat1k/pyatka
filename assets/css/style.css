@@ -295,8 +295,34 @@ body.light .theme-icon.moon { display: flex; }
 .card:hover { transform: translateY(-8px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
 
 /* Member cards */
+
+/*Roma photo*/
+.member-photo1 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 50%;
+}
+.member-photo1 {
+  height: 270px; border: 2px dashed var(--accent);
+  border-radius: 12px;
+  display: flex; justify-content: center; align-items: center;
+  margin-bottom: 15px; overflow: hidden;
+  transition: transform 0.3s ease;
+}
+.member-photo1 img { width: 100%; height: 100%; object-fit: cover; }
+.member-card:hover .member-photo { transform: scale(1.04); }
+.photo-placeholder { color: var(--text-muted); font-size: 0.9rem; opacity: 0.6; }
+
+/*murat photo*/
+.member-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 67%;
+}
 .member-photo {
-  height: 180px; border: 2px dashed var(--accent);
+  height: 270px; border: 2px dashed var(--accent);
   border-radius: 12px;
   display: flex; justify-content: center; align-items: center;
   margin-bottom: 15px; overflow: hidden;
