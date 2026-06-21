@@ -87,3 +87,19 @@ border:2px dashed #49bf9d;padding:20px;margin:10px;border-radius:10px
 .matrix-bg{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
 .bit{position:absolute;color:rgba(73,191,157,.25);filter:blur(1px);animation:fall linear infinite}
 @keyframes fall{from{transform:translateY(-120px)}to{transform:translateY(110vh)}}
+
+.tech-card{position:relative;overflow:hidden}
+.tech-preview{
+position:absolute;
+left:0;right:0;bottom:0;
+background:rgba(0,0,0,.7);
+opacity:0;
+transform:translateY(20px);
+transition:.3s;
+display:block;
+padding:10px;
+}
+.tech-card:hover .tech-preview{
+opacity:1;
+transform:translateY(0);
+}
