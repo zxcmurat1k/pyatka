@@ -34,3 +34,24 @@ if(j===0){del=false;i=(i+1)%words.length;}
 setTimeout(type,del?50:100);
 }
 type();
+
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+a.addEventListener('click',e=>{
+const id=a.getAttribute('href');
+const el=document.querySelector(id);
+if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth'});}
+});
+});
+const bg=document.getElementById('matrix-bg');
+if(bg){
+for(let i=0;i<80;i++){
+ const d=document.createElement('div');
+ d.className='bit';
+ d.textContent=Math.random()>0.5?'1':'0';
+ d.style.left=Math.random()*100+'vw';
+ d.style.fontSize=(12+Math.random()*40)+'px';
+ d.style.animationDuration=(8+Math.random()*15)+'s';
+ d.style.animationDelay=(-Math.random()*20)+'s';
+ bg.appendChild(d);
+}
+}

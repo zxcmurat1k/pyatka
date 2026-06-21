@@ -76,3 +76,14 @@ color:#38bdf8;
 display:inline-block;
 min-width:260px;
 }
+
+html{scroll-behavior:smooth}
+#typing{display:inline-block;min-width:280px}
+.avatar-placeholder,.tech-preview{
+border:2px dashed #49bf9d;padding:20px;margin:10px;border-radius:10px
+}
+.tech-preview{display:none}
+.tech-card:hover .tech-preview{display:block}
+.matrix-bg{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.bit{position:absolute;color:rgba(73,191,157,.25);filter:blur(1px);animation:fall linear infinite}
+@keyframes fall{from{transform:translateY(-120px)}to{transform:translateY(110vh)}}
