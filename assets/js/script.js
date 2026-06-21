@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ══════════════════════════════════════════════════
-     1. HERO TYPING — фиксированный, без бага
-  ══════════════════════════════════════════════════ */
+  /* 1. HERO TYPING — фиксированный, без бага*/
   const phrases = ['HTML & CSS', 'JavaScript', 'Node.js', 'Git & GitHub'];
   let pi = 0, ci = 0, isDeleting = false, typingTimer = null;
   const typingEl = document.getElementById('typing');
@@ -34,9 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Запускаем только ПОСЛЕ hero-анимации чтобы не было flash
   setTimeout(runTyping, 1600);
 
-  /* ══════════════════════════════════════════════════
-     2. HERO INTRO — anime.js timeline
-  ══════════════════════════════════════════════════ */
+  /* 2. HERO INTRO — anime.js timeline*/
   anime.timeline({ easing: 'easeOutExpo' })
     .add({ targets: '.badge',    scale: [0, 1], duration: 650, easing: 'easeOutBack' })
     .add({ targets: '#hero h1',  translateY: [-40, 0], opacity: [0, 1], duration: 850 }, '-=350')
@@ -50,9 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     duration: 900, easing: 'easeOutExpo'
   });
 
-  /* ══════════════════════════════════════════════════
-     3. SCROLL REVEAL
-  ══════════════════════════════════════════════════ */
+  /* 3. SCROLL REVEAL*/
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -67,20 +61,18 @@ document.addEventListener('DOMContentLoaded', () => {
     revealObserver.observe(s);
   });
 
-  /* ══════════════════════════════════════════════════
-     4. SKILLS PANEL — "рендер" + "пепел" + типинг
-  ══════════════════════════════════════════════════ */
+  /* 4. SKILLS PANEL — "рендер" + "пепел" + типинг*/
   const techItems   = document.querySelectorAll('.tech-item');
   const techImg     = document.getElementById('techImg');
   const techDesc    = document.getElementById('techDesc');
   const ashCanvas   = document.getElementById('ashCanvas');
   const ashCtx      = ashCanvas.getContext('2d');
 
-  let descTimer     = null;    // таймер печати описания
-  let currentActive = techItems[0]; // активный элемент при загрузке
-  let isSwitching   = false;   // блокировка повторного запуска анимации
+  let descTimer     = null;
+  let currentActive = techItems[0];
+  let isSwitching   = false;
 
-  // ─── Утилита: печать текста символ за символом ─────────────────
+  //Утилита: печать текста символ за символом
   function typeText(el, text, speed, onDone) {
     clearTimeout(descTimer);
     el.textContent = '';
@@ -94,14 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tick();
   }
 
-  // ─── Эффект "пепел" — частицы разлетаются от центра картинки ───
-  // ВАЖНО: анимация частиц реализована на чистом requestAnimationFrame
-  // с собственным отслеживанием времени (performance.now()), БЕЗ anime.js.
-  // Раньше использовался anime() для прогресса частиц — но если вкладка
-  // на момент анимации теряла фокус (например, при переключении в
-  // DevTools), anime.js мог не вызывать complete() вовремя, что
-  // приводило к зависанию всей цепочки переключения. Самодостаточный
-  // rAF-цикл с проверкой elapsed-времени гарантированно завершится.
+
   function ashDissolve(img, onDone) {
     cancelAnimationFrame(ashDissolve._raf);
 
@@ -112,12 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ashCanvas.height = H;
     ashCtx.clearRect(0, 0, W, H);
 
-    // Показываем canvas, скрываем исходную картинку
+    // Показываю canvas, скрываю исходную картинку
     ashCanvas.style.transition = 'opacity 0.08s ease';
     ashCanvas.style.opacity = '1';
     img.style.clipPath = 'inset(100% 0 0 0)';
 
-    // Генерируем частицы в области, где была видна картинка
+    // Генерирую частицы в области, где была видна картинка
     const cx = W / 2, cy = H / 2;
     const PARTICLE_COUNT = 70;
     const accentColor = getComputedStyle(document.documentElement)
@@ -131,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dx: (Math.random() - 0.5) * 80,
         dy: Math.random() * 60 + 10,
         size: 2 + Math.random() * 3,
-        delay: Math.random() * 150 // мс, для лёгкого разброса старта
+        delay: Math.random() * 150
       });
     }
 
@@ -146,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       pixels.forEach(p => {
         const t = Math.max(0, Math.min(1, (elapsed - p.delay) / DURATION));
-        const eased = t * t; // easeInQuad
+        const eased = t * t;
         const px = p.x + p.dx * eased;
         const py = p.y + p.dy * eased;
         const alpha = 1 - eased;
@@ -162,15 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (!finished) {
         finished = true;
         ashCanvas.style.opacity = '0';
-        // onDone вызываем сразу — не ждём CSS-transition,
-        // чтобы не зависеть ещё от одного асинхронного события
         if (onDone) onDone();
       }
     }
     ashDissolve._raf = requestAnimationFrame(draw);
 
-    // Абсолютная страховка: даже если rAF почему-то не идёт
-    // (вкладка свёрнута/не в фокусе), завершаем через обычный таймер.
     setTimeout(() => {
       if (!finished) {
         finished = true;
@@ -182,11 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, DURATION + 400);
   }
 
-  // ─── Эффект "рендер" — появление изображения построчно ─────────
-  // ВАЖНО: используем CSS transition вместо anime() с update-колбэком —
-  // CSS transition управляется самим браузером и завершается надёжно
-  // через событие 'transitionend', либо подстраховочный setTimeout,
-  // независимо от фокуса вкладки.
   function renderIn(img, src, onDone) {
     let settled = false;
     const fallback = setTimeout(() => {
@@ -198,12 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startReveal() {
       clearTimeout(fallback);
-      // Сбрасываем без transition, чтобы сразу скрыть картинку
       img.style.transition = 'none';
       img.style.clipPath = 'inset(100% 0 0 0)';
 
-      // Форсируем reflow, чтобы браузер зафиксировал стартовое состояние
-      // перед тем как мы включим transition и поменяем clip-path
       void img.offsetWidth;
 
       let finished = false;
@@ -223,8 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
       img.style.transition = 'clip-path 0.7s ease-in-out';
       img.style.clipPath = 'inset(0% 0 0 0)';
 
-      // Страховка на случай, если transitionend не сработает
-      // (например, если значение clip-path не успело реально измениться)
       const revealFallback = setTimeout(finishReveal, 800);
     }
 
@@ -237,20 +208,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (settled) return;
       settled = true;
       clearTimeout(fallback);
-      if (onDone) onDone(); // не виснем, если картинка не загрузилась
+      if (onDone) onDone();
     };
 
     img.src = src;
   }
 
-  // ─── Переключение панели при клике ──────────────────────────────
+  //Переключение панели при клике
   function switchTech(item) {
     if (item === currentActive || isSwitching) return;
     isSwitching = true;
 
-    // Страховка: что бы ни случилось внутри (ошибка анимации,
-    // не загрузившаяся картинка и т.п.) — флаг точно снимется сам,
-    // и клики по другим кнопкам не "замрут" навсегда.
     const safetyTimeout = setTimeout(() => { isSwitching = false; }, 3000);
 
     currentActive.classList.remove('active');
@@ -273,14 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       ashDissolve(techImg, () => {
         renderIn(techImg, newSrc, () => {
-          // Печатаем текст с небольшой задержкой после рендера картинки
+          // Печатает текст с небольшой задержкой после рендера картинки
           setTimeout(() => {
             typeText(techDesc, newText, 28, finish);
           }, 200);
         });
       });
     } catch (e) {
-      // Если эффект упал по любой причине — всё равно показываем новый контент
       console.error('switchTech error:', e);
       techImg.style.clipPath = 'inset(0% 0 0 0)';
       techImg.src = newSrc;
@@ -288,20 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Клик надёжнее hover: не "залипает" при быстром движении мыши
-  // и не запускает анимацию повторно, пока мышь просто проезжает мимо.
   techItems.forEach(item => {
     item.addEventListener('click', () => switchTech(item));
   });
 
-  // Инициализация: рендерим первую картинку и начинаем печатать
   renderIn(techImg, currentActive.dataset.img, () => {
     setTimeout(() => typeText(techDesc, currentActive.dataset.text, 28), 200);
   });
 
-  /* ══════════════════════════════════════════════════
-     5. THEME TOGGLE — anime.js вращение иконки
-  ══════════════════════════════════════════════════ */
+  /* 5. THEME TOGGLE — anime.js вращение иконки*/
   const themeBtn = document.getElementById('themeBtn');
   if (localStorage.getItem('theme') === 'light') document.body.classList.add('light');
 
