@@ -280,3 +280,123 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+/* ═══ GIT TERMINAL ═══ */
+  const termInput  = document.getElementById('termInput');
+  const termOutput = document.getElementById('termOutput');
+  const termBody   = document.getElementById('termBody');
+
+  if (termInput) {
+    termBody.addEventListener('click', () => termInput.focus());
+
+    const cmdHistory = [];
+    let histIdx = -1;
+
+    const GIT_COMMANDS = {
+      'git log': `<span class="c-yellow">commit a3f91bc</span> <span class="c-gray">(HEAD -> main, origin/main)</span>
+<span class="c-white">Author: Murat Izbasarov &lt;murat@devshowcase.ru&gt;</span>
+<span class="c-white">Date:   Sat Jun 21 14:32:11 2026 +0500</span>
+
+    <span class="c-white">feat: add contact form with Formspree integration</span>
+
+<span class="c-yellow">commit 7d2e4a1</span>
+<span class="c-white">Author: Roman Shangareev &lt;roman@devshowcase.ru&gt;</span>
+<span class="c-white">Date:   Fri Jun 20 18:15:44 2026 +0500</span>
+
+    <span class="c-white">style: redesign skills section with ash dissolve animation</span>
+
+<span class="c-yellow">commit 1bc88f0</span>
+<span class="c-white">Author: Murat Izbasarov &lt;murat@devshowcase.ru&gt;</span>
+<span class="c-white">Date:   Thu Jun 19 11:04:29 2026 +0500</span>
+
+    <span class="c-white">feat: add collapsible sidebar with theme toggle</span>`,
+
+      'git status': `<span class="c-white">On branch </span><span class="c-green">main</span>
+<span class="c-white">Your branch is up to date with </span><span class="c-blue">'origin/main'</span>
+
+<span class="c-white">Changes not staged for commit:</span>
+	<span class="c-red">modified:   assets/css/style.css</span>
+	<span class="c-red">modified:   assets/js/script.js</span>
+
+<span class="c-white">Untracked files:</span>
+	<span class="c-red">assets/img/</span>`,
+
+      'git branch': `<span class="c-green">* main</span>
+<span class="c-white">  feature/animations</span>
+<span class="c-white">  feature/contact-form</span>
+<span class="c-white">  hotfix/sidebar-mobile</span>`,
+
+      'git branch -a': `<span class="c-green">* main</span>
+<span class="c-white">  feature/animations</span>
+<span class="c-white">  feature/contact-form</span>
+<span class="c-red">  remotes/origin/HEAD</span> <span class="c-gray">-> origin/main</span>
+<span class="c-red">  remotes/origin/main</span>`,
+
+      'git diff': `<span class="c-yellow">diff --git a/assets/css/style.css b/assets/css/style.css</span>
+<span class="c-white">--- a/assets/css/style.css</span>
+<span class="c-white">+++ b/assets/css/style.css</span>
+<span class="c-blue">@@ -142,6 +142,18 @@</span>
+<span class="c-green">+.terminal-wrap {</span>
+<span class="c-green">+  max-width: 780px;</span>
+<span class="c-green">+  border-radius: 14px;</span>
+<span class="c-green">+}</span>`,
+
+      'git stash': `<span class="c-white">Saved working directory and index state</span>
+<span class="c-white">WIP on main: </span><span class="c-yellow">a3f91bc</span> <span class="c-white">feat: add contact form</span>`,
+
+      'git stash list': `<span class="c-yellow">stash@{0}</span><span class="c-white">: WIP on main: a3f91bc feat: add contact form</span>
+<span class="c-yellow">stash@{1}</span><span class="c-white">: WIP on feature/animations: 7d2e4a1 redesign skills section</span>`,
+
+      'git help': `<span class="c-white">Доступные команды:</span>
+
+  <span class="c-green">git log</span>         <span class="c-gray">— история коммитов</span>
+  <span class="c-green">git status</span>      <span class="c-gray">— состояние рабочей директории</span>
+  <span class="c-green">git branch</span>      <span class="c-gray">— список веток</span>
+  <span class="c-green">git branch -a</span>   <span class="c-gray">— все ветки включая удалённые</span>
+  <span class="c-green">git diff</span>        <span class="c-gray">— незакоммиченные изменения</span>
+  <span class="c-green">git stash</span>       <span class="c-gray">— сохранить изменения в стэш</span>
+  <span class="c-green">git stash list</span>  <span class="c-gray">— список стэшей</span>
+  <span class="c-green">clear</span>           <span class="c-gray">— очистить терминал</span>`,
+
+      'clear': '__CLEAR__',
+    };
+
+    const PROMPT = 'riba@devshowcase <span class="term-path">~/project</span> <span class="term-branch">(main)</span> $';
+
+    function addLine(cmd, outputHtml) {
+      const cmdLine = document.createElement('div');
+      cmdLine.className = 'term-line';
+      cmdLine.innerHTML = PROMPT + ' <span class="c-white">' + cmd + '</span>';
+      termOutput.appendChild(cmdLine);
+      if (outputHtml) {
+        const out = document.createElement('div');
+        out.className = 'term-output-block';
+        out.innerHTML = outputHtml;
+        termOutput.appendChild(out);
+        anime({ targets: out, opacity: [0, 1], translateY: [4, 0], duration: 250, easing: 'easeOutQuad' });
+      }
+      termBody.scrollTop = termBody.scrollHeight;
+    }
+
+    termInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = termInput.value.trim();
+        termInput.value = '';
+        histIdx = -1;
+        if (!cmd) return;
+        cmdHistory.unshift(cmd);
+        if (cmd === 'clear') { termOutput.innerHTML = ''; return; }
+        const output = GIT_COMMANDS[cmd];
+        if (output) {
+          addLine(cmd, output);
+        } else {
+          addLine(cmd, '<span class="c-red">zsh: command not found: ' + cmd + '</span>\n<span class="c-gray">Введи <span class="c-green">git help</span> для списка команд</span>');
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (histIdx < cmdHistory.length - 1) termInput.value = cmdHistory[++histIdx];
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        histIdx > 0 ? termInput.value = cmdHistory[--histIdx] : (histIdx = -1, termInput.value = '');
+      }
+    });
+  }

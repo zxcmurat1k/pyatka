@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DevShowcase 2.1</title>
 <link rel="stylesheet" href="assets/css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+<script src="assets/js/anime.min.js"></script>
 </head>
 
 <body>
@@ -54,14 +54,33 @@
     <h2 class="typing-wrap"><span id="typing"></span><span class="cursor-blink">|</span></h2>
     <div class="buttons">
       <a class="btn" href="#about">О проекте</a>
-      <a class="btn ghost" href="https://github.com/zxcmurat1k/riba.git" target="_blank">GitHub</a>
     </div>
   </div>
 </header>
 
 <section id="about" class="section reveal">
   <h2>О проекте</h2>
-  <p>Мы изучили HTML, CSS, JavaScript, Node.js и Git/GitHub в рамках учебного года.</p>
+   <p>Мы изучили HTML, CSS, JavaScript, Node.js и Git/GitHub в рамках учебного года и поделимся всем чему научились с вами.</p>
+
+  <div class="terminal-wrap">
+    <div class="terminal-titlebar">
+      <span class="tb-dot tb-red"></span>
+      <span class="tb-dot tb-yellow"></span>
+      <span class="tb-dot tb-green"></span>
+      <span class="tb-title">zsh — riba — 80×24</span>
+    </div>
+    <div class="terminal-body" id="termBody">
+      <div class="term-line">
+        <span class="term-prompt">riba@devshowcase <span class="term-path">~/project</span> <span class="term-branch">(main)</span> $</span>
+        <span class="term-hint">&nbsp;— попробуй: git log, git status, git branch, git diff, git stash, git help</span>
+      </div>
+      <div id="termOutput"></div>
+      <div class="term-input-row">
+        <span class="term-prompt">riba@devshowcase <span class="term-path">~/project</span> <span class="term-branch">(main)</span> $</span>
+        <input class="term-input" id="termInput" type="text" autocomplete="off" spellcheck="false" placeholder="введи команду...">
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- SKILLS — новый макет: список слева + панель справа -->
@@ -73,36 +92,36 @@
     <!-- Левая колонка: список технологий -->
     <ul class="tech-list">
       <li class="tech-item active"
-          data-img="assets/images/photo1.jpg"
-          data-text="структура веб-страниц, семантические теги, формы, таблицы, мультимедиа (аудио и видео), атрибуты элементов, ссылки, изображения и адаптивная разметка.">
+          data-img="PHOTO"
+          data-text="5-6ПРЕДЛОЖЕНИЙ">
         <span class="tech-num">01</span>
         <span class="tech-name">HTML5</span>
         <svg class="tech-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </li>
       <li class="tech-item"
-          data-img="assets/images/photo2.png"
-          data-text="селекторы, каскадность и специфичность, блочная модель, позиционирование элементов, Flexbox, Grid Layout, анимации, переходы, трансформации, медиазапросы и адаптивная вёрстка.">
+          data-img="PHOTO"
+          data-text="5-6ПРЕДЛОЖЕНИЙ">
         <span class="tech-num">02</span>
         <span class="tech-name">CSS3</span>
         <svg class="tech-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </li>
       <li class="tech-item"
-          data-img="assets/images/roman1.png"
-          data-text="переменные и типы данных, операторы, условия и циклы, функции, массивы и объекты, работа с DOM, обработка событий, модули, асинхронность (Promises, async/await), взаимодействие с API и основы ООП.">
+          data-img="PHOTO"
+          data-text="5-6ПРЕДЛОЖЕНИЙ">
         <span class="tech-num">03</span>
         <span class="tech-name">JavaScript</span>
         <svg class="tech-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </li>
       <li class="tech-item"
-          data-img="assets/images/murat2.png"
-          data-text="создание репозиториев, коммиты, ветки, слияние веток (merge), разрешение конфликтов, pull request, push/pull, командная разработка и работа с удалёнными репозиториями.">
+          data-img="PHOTO"
+          data-text="5-6ПРЕДЛОЖЕНИЙ">
         <span class="tech-num">04</span>
         <span class="tech-name">Node.js</span>
         <svg class="tech-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </li>
       <li class="tech-item"
-          data-img="assets/images/photo4.png"
-          data-text="создание серверов, работа с модулями, Express, маршрутизация, обработка запросов и ответов, работа с файлами, npm, подключение зависимостей и разработка серверной части веб-приложений.">
+          data-img="PHOTO"
+          data-text="5-6ПРЕДЛОЖЕНИЙ">
         <span class="tech-num">05</span>
         <span class="tech-name">Git / GitHub</span>
         <svg class="tech-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -114,10 +133,7 @@
       <div class="tech-panel-img-wrap" id="techImgWrap">
         <!-- canvas для эффекта "рассыпание" -->
         <canvas id="ashCanvas"></canvas>
-        <img id="techImg"
-             src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/HTML5_logo_and_wordmark.svg/240px-HTML5_logo_and_wordmark.svg.png"
-             alt="tech" />
-      </div>
+        <img id="techImg" src="PHOTO" alt="tech" />
       <div class="tech-panel-text">
         <p id="techDesc"></p><span class="tech-cursor">|</span>
       </div>
@@ -131,14 +147,14 @@
   <div class="grid">
     <div class="card member-card">
       <div class="member-photo">
-        <img src="assets/images/murat2.jpg" alt="Мурат Избасаров">
+        <img src="PHOTO" alt="Мурат Избасаров">
       </div>
       <h3>Мурат Избасаров</h3>
       <p>Node.js (Backend разработка)</p>
     </div>
     <div class="card member-card">
       <div class="member-photo1">
-        <img src="assets/images/roman1.jpg" alt="Роман Шангареев">
+        <img src="PHOTO" alt="Роман Шангареев">
       </div>
       <h3>Роман Шангареев</h3>
       <p>HTML, CSS (Frontend - разработчик)</p>
@@ -146,7 +162,7 @@
   </div>
 </section>
 
-<<section id="contact" class="section reveal">
+<section id="contact" class="section reveal">
   <h2>Контакты</h2>
   <div class="contact-links">
     <a href="https://github.com/zxcmurat1k/riba.git" target="_blank" class="contact-link">
