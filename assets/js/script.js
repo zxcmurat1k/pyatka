@@ -1,18 +1,36 @@
 
-const words=['HTML5','CSS3','JavaScript','Node.js','Backend Development'];
-let i=0,j=0,d=false;const el=document.getElementById('typing');
-function type(){let w=words[i];el.textContent=w.substring(0,j);
-if(!d){j++;if(j>w.length){d=true;setTimeout(type,1200);return;}}
-else{j--;if(j===0){d=false;i=(i+1)%words.length;}}
-setTimeout(type,d?50:100)} type();
+const links=document.querySelectorAll('.sidebar a');
+const sidebar=document.getElementById('sidebar');
+const toggle=document.getElementById('toggle');
 
-document.querySelectorAll('.reveal').forEach(e=>{
-new IntersectionObserver(x=>x.forEach(v=>{if(v.isIntersecting)e.classList.add('active')})).observe(e);
+toggle.addEventListener('click',()=>{
+sidebar.classList.toggle('collapsed');
 });
 
-document.querySelectorAll('[data-target]').forEach(el=>{
-new IntersectionObserver(es=>es.forEach(en=>{
-if(en.isIntersecting){let t=+el.dataset.target,c=0;
-let id=setInterval(()=>{c++;el.textContent=c;if(c>=t)clearInterval(id)},60)}
-})).observe(el);
+links.forEach(l=>{
+l.addEventListener('click',()=>{
+document.querySelector(l.getAttribute('href')).scrollIntoView({behavior:'smooth'});
+sidebar.classList.add('collapsed');
 });
+});
+
+// typing
+const words=['HTML5','CSS3','JavaScript','Node.js','Backend'];
+let i=0,j=0,del=false;
+const el=document.getElementById('typing');
+
+function type(){
+let w=words[i];
+el.textContent=w.substring(0,j);
+
+if(!del){
+j++;
+if(j>w.length){del=true;setTimeout(type,1000);return;}
+}else{
+j--;
+if(j===0){del=false;i=(i+1)%words.length;}
+}
+
+setTimeout(type,del?50:100);
+}
+type();
