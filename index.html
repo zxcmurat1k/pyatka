@@ -11,20 +11,41 @@
 
 <body>
 
-<div class="sidebar collapsed" id="sidebar">
-<button class="toggle" id="toggle">☰</button>
+<div class="sidebar" id="sidebar">
+<li>
+  <a href="#about">
+    <span class="nav-text">О нас</span>
+    <img src="assets/img/about.png" class="nav-icon">
+  </a>
+</li>
 
-<a href="#about">О нас</a>
-<a href="#skills">Навыки</a>
-<a href="#team">Вклад</a>
-<a href="#contact">Контакты</a>
+<li>
+  <a href="#skills">
+    <span class="nav-text">Навыки</span>
+    <img src="assets/img/skills.png" class="nav-icon">
+  </a>
+</li>
+
+<li>
+  <a href="#team">
+    <span class="nav-text">Вклад</span>
+    <img src="assets/img/team.png" class="nav-icon">
+  </a>
+</li>
+
+<li>
+  <a href="#contact">
+    <span class="nav-text">Контакты</span>
+    <img src="assets/img/contact.png" class="nav-icon">
+  </a>
+</li>
 </div>
 
-<header class="hero">
+<header id='hero' class="hero">
 <div class="hero-content">
 <span class="badge">Студенческий проект 2026</span>
 <h1>Мурат Избасаров<br>&<br>Роман Шангареев</h1>
-<p>Студенты-программисты</p>
+<p><div class='hero-anim'>Студенты-программисты</div></p>
 
 <h2 class="typing-wrap"><span id="typing"></span></h2>
 
@@ -129,6 +150,12 @@ anime({targets:'.tech-card',rotateX:[90,0],delay:anime.stagger(100)});
 anime({targets:'.hero p',opacity:[0,1],duration:1200});
 anime({targets:'#typing',opacity:[0,1],duration:800});
 </script>
+
+<footer class="footer">
+  <a href="https://github.com/zxcmurat1k/riba.git" target="_blank">GitHub</a>
+  <a href="https://discord.gg/vzQfjUKH9E" target="_blank">Discord</a>
+</footer>
+
 </body>
 
 </html>
