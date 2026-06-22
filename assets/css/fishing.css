@@ -1,0 +1,353 @@
+/* ════════════════════════════════════════════════════════════
+   FISHING SECTION — отдельная тема: "озеро на закате"
+   Базовая палитра наследует общий сайт, но добавляет свой
+   акцент — цвет блесны/наживки на фоне глубокой тёмной воды.
+════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #0a1612;
+  --bg2: #0f201a;
+  --water: #102822;
+  --text: #eef3f0;
+  --text-muted: #8fa89e;
+  --accent: #d4a843;       /* блесна — тёплый латунный жёлтый */
+  --accent-deep: #8a6d2a;
+  --line: #2a4a40;         /* цвет лески / тонких линий */
+  --card-bg: #11241e;
+  --sidebar-bg: rgba(10, 22, 18, 0.85);
+  --sidebar-w-open: 230px;
+  --sidebar-w-closed: 60px;
+  --footer-bg: #07100d;
+  --depth-line: rgba(212, 168, 67, 0.18);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body.fishing-body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background:
+    radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(212,168,67,0.07), transparent),
+    linear-gradient(180deg, var(--bg) 0%, var(--water) 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  padding-left: var(--sidebar-w-closed);
+  min-height: 100vh;
+  transition: padding 0.35s ease;
+}
+
+@font-face {
+  /* Используем системный fallback-стек с засечками,
+     визуально перекликающийся с изгибом крючка */
+  font-family: 'FishHeading';
+  src: local('Fraunces'), local('Georgia');
+}
+
+.fish-h1, .fish-h2, .fish-h3 {
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ===== SIDEBAR (своя версия для раздела рыбалки) ===== */
+.fish-sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  height: 100%;
+  width: var(--sidebar-w-closed);
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding-top: 36px;
+  overflow: hidden;
+  z-index: 1000;
+  transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.fish-sidebar:hover { width: var(--sidebar-w-open); }
+
+.fish-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px 28px;
+  white-space: nowrap;
+  color: var(--accent);
+}
+.fish-logo svg { width: 26px; height: 26px; flex-shrink: 0; }
+.fish-logo span {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.25s ease 0.05s, transform 0.25s ease 0.05s;
+}
+.fish-sidebar:hover .fish-logo span { opacity: 1; transform: translateX(0); }
+
+.fish-nav { list-style: none; margin: 0; padding: 0; flex: 1; }
+
+.fish-nav li a {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 18px;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.25s ease, color 0.25s ease;
+  border-radius: 0 8px 8px 0;
+  margin-right: 8px;
+  position: relative;
+}
+.fish-nav li a:hover { background: rgba(212,168,67,0.12); color: var(--accent); }
+.fish-nav li a.active {
+  color: var(--accent);
+  background: rgba(212,168,67,0.1);
+}
+.fish-nav li a.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+
+.fish-nav-icon { width: 21px; height: 21px; flex-shrink: 0; stroke: currentColor; }
+
+.fish-nav-text {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.25s ease 0.05s, transform 0.25s ease 0.05s;
+  font-size: 0.93rem;
+  pointer-events: none;
+}
+.fish-sidebar:hover .fish-nav-text { opacity: 1; transform: translateX(0); }
+
+.fish-back {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 18px;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+}
+.fish-back:hover { color: var(--accent); }
+.fish-back svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* ===== HERO ===== */
+.fish-hero {
+  padding: 90px 40px 60px;
+  max-width: 880px;
+}
+.fish-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.fish-eyebrow::before {
+  content: '';
+  width: 22px; height: 1px;
+  background: var(--accent);
+}
+.fish-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.12;
+  margin: 0 0 22px;
+}
+.fish-hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.fish-hero p {
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  max-width: 620px;
+  margin: 0;
+}
+
+/* ===== DEPTH SCALE LAYOUT (сигнатурный элемент) =====
+   Шкала глубины слева задаёт реальный масштаб обитания каждой
+   рыбы (0–30м); карточки справа размечены по той же шкале —
+   высота на странице = глубина в воде. */
+.depth-section {
+  padding: 20px 40px 100px;
+  max-width: 1080px;
+}
+
+.depth-layout {
+  display: flex;
+  gap: 36px;
+  position: relative;
+}
+
+.depth-ruler {
+  flex-shrink: 0;
+  width: 64px;
+  position: relative;
+  padding-top: 8px;
+}
+.depth-ruler-line {
+  position: absolute;
+  left: 30px; top: 8px; bottom: 8px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--line), transparent 96%);
+}
+.depth-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  height: 0;
+}
+.depth-mark::after {
+  content: '';
+  width: 8px; height: 1px;
+  background: var(--line);
+  order: 2;
+}
+
+.depth-rows { flex: 1; display: flex; flex-direction: column; gap: 18px; }
+
+.fish-card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+.fish-card:hover, .fish-card.active {
+  border-color: var(--accent);
+  background: rgba(212,168,67,0.06);
+  transform: translateX(4px);
+}
+
+.fish-thumb {
+  width: 84px; height: 64px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(212,168,67,0.16), rgba(212,168,67,0.04));
+  border: 1px dashed var(--accent-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.fish-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.fish-thumb-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.3;
+  padding: 4px;
+}
+
+.fish-info { flex: 1; min-width: 0; }
+.fish-info-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.fish-name {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.fish-depth-tag {
+  font-size: 0.74rem;
+  color: var(--accent);
+  background: rgba(212,168,67,0.1);
+  padding: 2px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.fish-desc {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.fish-tags {
+  display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+}
+.fish-tag {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+/* ===== FOOTER NOTE ===== */
+.fish-footer-note {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 40px 60px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 760px) {
+  body.fishing-body { padding-left: 0; padding-bottom: 64px; }
+  .fish-sidebar {
+    width: 100%; height: 64px;
+    top: auto; bottom: 0;
+    flex-direction: row;
+    padding-top: 0;
+    border-right: none;
+    border-top: 1px solid var(--line);
+  }
+  .fish-sidebar:hover { width: 100%; }
+  .fish-logo, .fish-back { display: none; }
+  .fish-nav { display: flex; width: 100%; }
+  .fish-nav li { flex: 1; }
+  .fish-nav li a {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 4px;
+    margin-right: 0;
+    border-radius: 10px;
+    justify-content: center;
+    text-align: center;
+  }
+  .fish-nav-text { opacity: 1 !important; transform: none !important; font-size: 0.62rem; }
+  .fish-nav li a.active::before { left: 50%; top: 2px; bottom: auto; width: 16px; height: 3px; transform: translateX(-50%); border-radius: 3px; }
+
+  .fish-hero { padding: 40px 22px 30px; }
+  .depth-section { padding: 10px 22px 60px; }
+  .depth-ruler { display: none; }
+  .fish-card { flex-direction: column; align-items: flex-start; }
+  .fish-thumb { width: 100%; height: 120px; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .fish-sidebar, .fish-nav li a, .fish-card, .fish-nav-text, .fish-logo span {
+    transition: none !important;
+  }
+}
