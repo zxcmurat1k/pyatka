@@ -213,7 +213,7 @@ body.light .theme-icon.moon { display: flex; }
   border-radius: 16px;
   border: 1px solid rgba(56,189,248,0.2);
   padding: 28px;
-  min-height: 320px;
+  min-height: 350px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -222,7 +222,7 @@ body.light .theme-icon.moon { display: flex; }
 
 .tech-panel-img-wrap {
   position: relative;
-  height: 160px;
+  height: 350px;
   display: flex;
   align-items: center;
   justify-content: center;
