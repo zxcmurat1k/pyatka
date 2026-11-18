@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ModForge</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Your existing minimal CSS -->
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a> | <a href="/catalog">Catalog</a> | <a href="/modpack">Builder (<%= cartCount %>)</a>
+        <% if (user) { %>
+            | <a href="/profile">Profile</a> | <a href="/logout">Logout</a>
+            <% if (user.role === 'admin') { %> | <a href="/admin">Admin</a> <% } %>
+        <% } else { %>
+            | <a href="/login">Login</a>
+        <% } %>
+    </nav>
+    <hr>

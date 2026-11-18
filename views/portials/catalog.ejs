@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+    <h2>Mod Catalog</h2>
+    <ul>
+        <% mods.forEach(mod => { %>
+            <li>
+                <a href="/mods/<%= mod.id %>"><%= mod.title %></a> 
+                <form action="/modpack/add/<%= mod.id %>" method="POST" style="display:inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit">Add to Builder</button>
+                </form>
+            </li>
+        <% }) %>
+    </ul>
+</body></html>
