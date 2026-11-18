@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+    <h2>Modpack Builder (Cart)</h2>
+    <ul>
+        <% cartMods.forEach(mod => { %>
+            <li><%= mod.title %></li>
+        <% }) %>
+    </ul>
+    <% if (cartMods.length > 0) { %>
+        <form action="/modpack/checkout" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit">Save Modpack</button>
+        </form>
+    <% } else { %>
+        <p>Your builder is empty.</p>
+    <% } %>
+</body></html>

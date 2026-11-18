@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+    <h2>My Profile</h2>
+    <p>Welcome, <%= user.name %>!</p>
+    <h3>My Modpacks</h3>
+    <ul>
+        <% modpacks.forEach(pack => { %>
+            <li>Pack #<%= pack.id %> - Status: <%= pack.status %></li>
+        <% }) %>
+    </ul>
+</body></html>

@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+    <h2>Admin Dashboard</h2>
+    <p>Total Users: <%= stats.users %></p>
+    <p>Total Mods: <%= stats.mods %></p>
+    <hr>
+    <h3>Add Mod</h3>
+    <form action="/admin/mods" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="text" name="title" placeholder="Mod Title" required><br>
+        <input type="text" name="game_title" placeholder="Game" required><br>
+        <input type="number" name="category_id" placeholder="Category ID" required><br>
+        <input type="file" name="cover" accept=".jpg,.png,.webp"><br>
+        <button type="submit">Upload Mod</button>
+    </form>
+</body></html>
