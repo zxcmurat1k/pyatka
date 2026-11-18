@@ -1,1 +1,1 @@
-{"name":"devshowcase2","version":"1.0.0","main":"server.js","dependencies":{"express":"^4.19.2"}}
+{"name":"devshowcase2","version":"1.0.0","main":"server.js","dependencies":{"bcryptjs":"^3.0.3","better-sqlite3":"^13.2.0","ejs":"^7.0.2","express":"^4.22.3","express-session":"^1.19.0","multer":"^2.5.0"}}
