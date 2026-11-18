@@ -1,0 +1,7 @@
+<%- include('partials/header') %>
+    <h2><%= mod.title %></h2>
+    <p><%= mod.description %></p>
+    <% if (mod.image_url) { %><img src="<%= mod.image_url %>" width="200" alt="Cover"><% } %>
+    <h3>Reviews</h3>
+    <% reviews.forEach(r => { %><p>⭐ <%= r.rating %> - <%= r.comment %></p><% }) %>
+</body></html>
