@@ -1,4 +1,18 @@
 <%- include('partials/header') %>
-    <h2>Error</h2>
-    <p><%= msg %></p>
-</body></html>
+
+<%
+  var code = typeof msg !== 'undefined' && msg ? msg.match(/\d+/) : null;
+  var errorCode = code ? code[0] : '?';
+  var errorText = typeof msg !== 'undefined' ? msg : 'Произошла ошибка';
+%>
+
+<div class="error-wrap">
+  <div class="error-code" data-fade><%= errorCode %></div>
+  <div class="error-msg" data-fade><%= errorText %></div>
+  <div data-fade>
+    <a href="/" class="btn btn-primary btn-lg">🏠 На главную</a>
+    <a href="/catalog" class="btn btn-ghost btn-lg">🎮 В каталог</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

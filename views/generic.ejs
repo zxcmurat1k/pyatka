@@ -1,4 +1,44 @@
 <%- include('partials/header') %>
-    <h1><%= typeof title !== 'undefined' ? title : (typeof msg !== 'undefined' ? msg : 'Page') %></h1>
-    <p>Barebones rendering operational.</p>
-</body></html>
+
+<div class="generic-wrap" data-fade>
+  <h1><%= typeof title !== 'undefined' ? title : (typeof msg !== 'undefined' ? msg : 'Страница') %></h1>
+  <div style="margin-top:24px; color:var(--text-muted); line-height:1.8;">
+    <% if (typeof title !== 'undefined' && title === 'Register') { %>
+      <p>Регистрация временно недоступна. Используйте тестовый аккаунт администратора для входа.</p>
+      <div style="margin-top:16px;">
+        <a href="/login" class="btn btn-primary">← Вернуться к входу</a>
+      </div>
+    <% } else if (typeof title !== 'undefined' && title === 'Forgot Password') { %>
+      <p>Восстановление пароля временно недоступно. Обратитесь к администратору.</p>
+      <div style="margin-top:16px;">
+        <a href="/login" class="btn btn-primary">← Вернуться к входу</a>
+      </div>
+    <% } else if (typeof title !== 'undefined' && title === 'ABOUT') { %>
+      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:12px;">О проекте <%= typeof appName !== 'undefined' ? appName : 'HornyHo' %></h2>
+      <p><%= typeof appName !== 'undefined' ? appName : 'HornyHo' %> — это каталог модификаций для популярных компьютерных игр и конструктор сборок модпаков.</p>
+      <p style="margin-top:12px;">Мы помогаем геймерам находить лучшие моды, собирать их в совместимые сборки и делиться ими с сообществом.</p>
+    <% } else if (typeof title !== 'undefined' && title === 'FAQ') { %>
+      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:12px;">Часто задаваемые вопросы</h2>
+      <div class="card" style="padding:20px; margin-bottom:12px;">
+        <strong>Как добавить мод в сборку?</strong>
+        <p style="margin-top:8px;">Откройте каталог, найдите нужный мод и нажмите кнопку «+ В сборку».</p>
+      </div>
+      <div class="card" style="padding:20px; margin-bottom:12px;">
+        <strong>Как сохранить сборку?</strong>
+        <p style="margin-top:8px;">Перейдите в конструктор сборок и нажмите «Сохранить сборку». Для этого нужно авторизоваться.</p>
+      </div>
+      <div class="card" style="padding:20px;">
+        <strong>Что такое раздел 18+?</strong>
+        <p style="margin-top:8px;">Раздел с модификациями для взрослых. Доступ к нему возможен только после подтверждения возраста.</p>
+      </div>
+    <% } else if (typeof title !== 'undefined' && title === 'PRIVACY') { %>
+      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:12px;">Политика конфиденциальности</h2>
+      <p>Мы серьёзно относимся к вашей конфиденциальности. Собранные данные используются исключительно для работы сервиса.</p>
+      <p style="margin-top:12px;">Мы не передаём ваши данные третьим лицам без вашего согласия.</p>
+    <% } else { %>
+      <p>Содержимое страницы загружается...</p>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

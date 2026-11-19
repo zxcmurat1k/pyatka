@@ -1,15 +1,112 @@
 <%- include('../partials/header') %>
-    <h2>Admin Dashboard</h2>
-    <p>Total Users: <%= stats.users %></p>
-    <p>Total Mods: <%= stats.mods %></p>
-    <hr>
-    <h3>Add Mod</h3>
+
+<h1 class="page-title">👑 Панель администратора</h1>
+<p class="page-subtitle">Управление каталогом модов и пользователями</p>
+
+<!-- Stats -->
+<div class="admin-stats" data-fade>
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.users %></div>
+    <div class="stat-label">👤 Пользователей</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.mods %></div>
+    <div class="stat-label">🎮 Модов</div>
+  </div>
+  <% if (typeof stats.modpacks !== 'undefined') { %>
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.modpacks %></div>
+    <div class="stat-label">📦 Сборок</div>
+  </div>
+  <% } %>
+  <% if (typeof stats.reviews !== 'undefined') { %>
+  <div class="stat-card">
+    <div class="stat-value"><%= stats.reviews %></div>
+    <div class="stat-label">💬 Отзывов</div>
+  </div>
+  <% } %>
+</div>
+
+<!-- Pending Reviews -->
+<% if (typeof pendingReviews !== 'undefined' && pendingReviews && pendingReviews.length > 0) { %>
+<section data-fade style="margin-bottom:40px;">
+  <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">⏳ Отзывы на модерации (<%= pendingReviews.length %>)</h2>
+  <div class="builder-list">
+    <% pendingReviews.forEach(function(r) { %>
+      <div class="builder-item">
+        <div class="builder-item-info">
+          <div class="builder-item-title">
+            ⭐<%= r.rating %> — <%= r.comment ? r.comment.substring(0, 80) : '' %><%= r.comment && r.comment.length > 80 ? '...' : '' %>
+          </div>
+          <div class="builder-item-meta">
+            Мод ID: <%= r.mod_id %> &bull; Пользователь ID: <%= r.user_id %> &bull; <%= r.created_at || '' %>
+          </div>
+        </div>
+        <span class="badge badge-top">⏳ Ожидает</span>
+      </div>
+    <% }); %>
+  </div>
+</section>
+<% } %>
+
+<!-- Add Mod Form -->
+<section data-fade>
+  <div class="admin-form">
+    <h2 class="admin-form-title">➕ Добавить мод</h2>
+
     <form action="/admin/mods" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <input type="text" name="title" placeholder="Mod Title" required><br>
-        <input type="text" name="game_title" placeholder="Game" required><br>
-        <input type="number" name="category_id" placeholder="Category ID" required><br>
-        <input type="file" name="cover" accept=".jpg,.png,.webp"><br>
-        <button type="submit">Upload Mod</button>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="form-group">
+        <label class="form-label" for="title">Название мода</label>
+        <input type="text" id="title" name="title" class="form-input" placeholder="Awesome Mod v2.0" required>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label" for="game_title">Игра</label>
+          <input type="text" id="game_title" name="game_title" class="form-input" placeholder="Minecraft" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="game_version">Версия игры</label>
+          <input type="text" id="game_version" name="game_version" class="form-input" placeholder="1.21.4">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label" for="category_id">ID категории</label>
+          <input type="number" id="category_id" name="category_id" class="form-input" placeholder="1" required min="1">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="file_size_mb">Размер (МБ)</label>
+          <input type="number" id="file_size_mb" name="file_size_mb" class="form-input" placeholder="10.0" step="0.1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Описание</label>
+        <textarea id="description" name="description" class="form-textarea" placeholder="Описание мода..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="install_instructions">Инструкция по установке</label>
+        <textarea id="install_instructions" name="install_instructions" class="form-textarea" placeholder="1. Скачайте мод...&#10;2. Скопируйте в папку...&#10;3. Запустите игру"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="source_url">Ссылка на источник</label>
+        <input type="url" id="source_url" name="source_url" class="form-input" placeholder="https://nexusmods.com/...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cover">Обложка (JPG, PNG, WebP)</label>
+        <input type="file" id="cover" name="cover" accept=".jpg,.jpeg,.png,.webp" class="form-input" style="padding:10px;">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block">📤 Загрузить мод</button>
     </form>
-</body></html>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

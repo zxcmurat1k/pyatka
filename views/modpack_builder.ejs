@@ -1,16 +1,59 @@
 <%- include('partials/header') %>
-    <h2>Modpack Builder (Cart)</h2>
-    <ul>
-        <% cartMods.forEach(mod => { %>
-            <li><%= mod.title %></li>
-        <% }) %>
-    </ul>
-    <% if (cartMods.length > 0) { %>
-        <form action="/modpack/checkout" method="POST">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button type="submit">Save Modpack</button>
-        </form>
-    <% } else { %>
-        <p>Your builder is empty.</p>
-    <% } %>
-</body></html>
+
+<h1 class="page-title">🛠️ Конструктор сборок</h1>
+<p class="page-subtitle">Собирай свой идеальный модпак и сохраняй в один клик</p>
+
+<div class="builder-layout">
+  <% if (typeof cartMods !== 'undefined' && cartMods.length > 0) { %>
+    <%
+      var totalSize = 0;
+      cartMods.forEach(function(m) { totalSize += (m.file_size_mb || 0); });
+    %>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+      <div style="color:var(--text-muted); font-size:0.9rem;">
+        <strong><%= cartMods.length %></strong> модов в сборке &bull;
+        💾 Общий размер: <strong><%= totalSize.toFixed(1) %> МБ</strong>
+      </div>
+    </div>
+
+    <div class="builder-list">
+      <% cartMods.forEach(function(mod, i) { %>
+        <div class="builder-item" data-fade>
+          <div class="builder-item-num"><%= i + 1 %></div>
+          <div class="builder-item-info">
+            <div class="builder-item-title">
+              <a href="/mods/<%= mod.id %>" style="color:var(--text); text-decoration:none;">
+                <%= mod.title %>
+              </a>
+            </div>
+            <div class="builder-item-meta">
+              <span><%= mod.game_title %></span>
+              <% if (mod.game_version) { %> &bull; <span>v<%= mod.game_version %></span><% } %>
+              &bull; <span>💾 <%= mod.file_size_mb %> МБ</span>
+            </div>
+          </div>
+          <span class="badge badge-game"><%= mod.game_title %></span>
+        </div>
+      <% }); %>
+    </div>
+
+    <div class="builder-actions">
+      <form action="/modpack/checkout" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-primary btn-lg">💾 Сохранить сборку</button>
+      </form>
+      <a href="/catalog" class="btn btn-ghost btn-lg">+ Добавить ещё</a>
+    </div>
+
+  <% } else { %>
+    <div class="builder-empty" data-fade>
+      <div class="builder-empty-icon">📦</div>
+      <h3 style="margin-bottom:8px;">Ваша сборка пуста</h3>
+      <p style="color:var(--text-dim); margin-bottom:24px;">Добавьте моды из каталога, чтобы начать собирать модпак</p>
+      <a href="/catalog" class="btn btn-primary btn-lg">🎮 Перейти в каталог</a>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,10 +1,102 @@
 <%- include('partials/header') %>
-    <h2>My Profile</h2>
-    <p>Welcome, <%= user.name %>!</p>
-    <h3>My Modpacks</h3>
-    <ul>
-        <% modpacks.forEach(pack => { %>
-            <li>Pack #<%= pack.id %> - Status: <%= pack.status %></li>
-        <% }) %>
-    </ul>
-</body></html>
+
+<div class="profile-header" data-fade>
+  <div class="profile-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : '?' %></div>
+  <div>
+    <div class="profile-name"><%= user.name %></div>
+    <div class="profile-role">
+      <span class="badge <%= user.role === 'admin' ? 'badge-hot' : 'badge-new' %>"><%= user.role === 'admin' ? '👑 Админ' : '👤 Пользователь' %></span>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-container">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tabPacks">📦 Мои сборки</button>
+    <% if (typeof favorites !== 'undefined') { %>
+      <button class="tab-btn" data-tab="tabFavs">❤️ Избранное</button>
+    <% } %>
+    <button class="tab-btn" data-tab="tabSettings">⚙️ Настройки</button>
+  </div>
+
+  <!-- Tab: Modpacks -->
+  <div class="tab-content active" id="tabPacks">
+    <% if (typeof modpacks !== 'undefined' && modpacks.length > 0) { %>
+      <div class="builder-list">
+        <% modpacks.forEach(function(pack, i) { %>
+          <div class="builder-item" data-fade>
+            <div class="builder-item-num"><%= i + 1 %></div>
+            <div class="builder-item-info">
+              <div class="builder-item-title">Сборка #<%= pack.id %></div>
+              <div class="builder-item-meta">
+                <span>Версия: <%= pack.target_game_version %></span>
+                &bull; <span>Метод: <%= pack.install_method %></span>
+                <% if (pack.total_size_mb) { %>&bull; <span>💾 <%= pack.total_size_mb %> МБ</span><% } %>
+                <% if (pack.created_at) { %>&bull; <span>📅 <%= pack.created_at %></span><% } %>
+              </div>
+            </div>
+            <span class="badge <%= pack.status === 'completed' ? 'badge-new' : (pack.status === 'cancelled' ? 'badge-hot' : 'badge-top') %>">
+              <%= pack.status === 'new' ? '🆕 Новая' : (pack.status === 'in_progress' ? '⏳ В работе' : (pack.status === 'completed' ? '✅ Готова' : '❌ Отменена')) %>
+            </span>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="builder-empty">
+        <div class="builder-empty-icon">📦</div>
+        <h3>Нет сохранённых сборок</h3>
+        <p style="color:var(--text-dim); margin:8px 0 20px;">Перейдите в конструктор, чтобы создать первую сборку</p>
+        <a href="/modpack" class="btn btn-primary">🛠️ Конструктор сборок</a>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Tab: Favorites -->
+  <% if (typeof favorites !== 'undefined') { %>
+    <div class="tab-content" id="tabFavs">
+      <% if (favorites && favorites.length > 0) { %>
+        <div class="mods-carousel">
+          <% favorites.forEach(function(mod) { %>
+            <a href="/mods/<%= mod.id %>" class="card mod-card" style="text-decoration:none; color:inherit;">
+              <% if (mod.image_url) { %>
+                <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
+              <% } %>
+              <div class="card-body">
+                <div class="card-title"><%= mod.title %></div>
+                <div class="card-meta"><span><%= mod.game_title %></span></div>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="builder-empty">
+          <div class="builder-empty-icon">❤️</div>
+          <h3>Избранное пусто</h3>
+          <p style="color:var(--text-dim); margin-top:8px;">Добавляйте моды в избранное из каталога</p>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+
+  <!-- Tab: Settings -->
+  <div class="tab-content" id="tabSettings">
+    <div style="max-width:500px;">
+      <div class="card" style="padding:24px;">
+        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:20px;">Аккаунт</h3>
+        <div class="mod-info-row">
+          <span class="mod-info-label">Имя</span>
+          <span class="mod-info-value"><%= user.name %></span>
+        </div>
+        <div class="mod-info-row">
+          <span class="mod-info-label">Роль</span>
+          <span class="mod-info-value"><%= user.role %></span>
+        </div>
+        <div style="margin-top:20px;">
+          <a href="/logout" class="btn btn-danger btn-sm">🚪 Выйти из аккаунта</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

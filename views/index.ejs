@@ -1,4 +1,116 @@
 <%- include('partials/header') %>
-    <h2>Welcome to ModForge</h2>
-    <p>The ultimate modpack builder and catalog.</p>
-</body></html>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge" data-fade>🔥 Каталог модов для PC-игр</div>
+    <h1 data-fade>Создай свою <span class="accent">идеальную сборку</span> модов</h1>
+    <p class="hero-desc" data-fade>
+      Находи лучшие модификации, собирай модпаки в один клик и делись ими с сообществом.
+      <%= typeof games !== 'undefined' && games ? games.length : 5 %> игр в каталоге.
+    </p>
+    <div class="hero-buttons" data-fade>
+      <a href="/catalog" class="btn btn-primary btn-lg">🎮 Открыть каталог</a>
+      <a href="/modpack" class="btn btn-ghost btn-lg">🛠️ Конструктор сборок</a>
+    </div>
+    <% if (typeof games !== 'undefined' && games && games.length > 0) { %>
+      <div class="hero-stats" data-fade>
+        <% var totalMods = 0, totalDl = 0; %>
+        <% games.forEach(function(g) { totalMods += (g.mods_count || 0); totalDl += (g.total_downloads || 0); }); %>
+        <div>
+          <div class="hero-stat-num"><%= totalMods %></div>
+          <div class="hero-stat-label">модификаций</div>
+        </div>
+        <div>
+          <div class="hero-stat-num"><%= games.length %></div>
+          <div class="hero-stat-label">игр</div>
+        </div>
+        <div>
+          <div class="hero-stat-num"><%= totalDl.toLocaleString('ru-RU') %></div>
+          <div class="hero-stat-label">загрузок</div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</section>
+</div><!-- close container from header to allow full-width hero -->
+
+<!-- TOP GAMES -->
+<div class="container">
+<section style="padding: 40px 0 60px;" data-fade>
+  <h2 class="section-title">🎮 Топ-5 популярных игр</h2>
+  <p class="section-subtitle">Выбери игру, чтобы увидеть категории модов</p>
+
+  <div class="games-grid">
+    <% 
+      var gameCovers = {
+        'Deadlock': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1422450/header.jpg',
+        'Minecraft': 'https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/MC-EDU_Game-Image_Standard.jpg',
+        'The Elder Scrolls V: Skyrim SE': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/489830/header.jpg',
+        'Cyberpunk 2077': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg',
+        'Terraria': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/105600/header.jpg'
+      };
+      var defaultGames = [
+        { game_title: 'Deadlock', mods_count: 42, total_downloads: 12800 },
+        { game_title: 'Minecraft', mods_count: 156, total_downloads: 89400 },
+        { game_title: 'The Elder Scrolls V: Skyrim SE', mods_count: 98, total_downloads: 45200 },
+        { game_title: 'Cyberpunk 2077', mods_count: 67, total_downloads: 31500 },
+        { game_title: 'Terraria', mods_count: 83, total_downloads: 27600 }
+      ];
+      var displayGames = (typeof games !== 'undefined' && games && games.length > 0) ? games : defaultGames;
+    %>
+    <% displayGames.forEach(function(g, i) { %>
+      <div class="game-card" onclick="openDrawer('<%= g.game_title %>')" tabindex="0" role="button"
+           aria-label="Открыть категории для <%= g.game_title %>"
+           onkeydown="if(event.key==='Enter')openDrawer('<%= g.game_title %>')">
+        <div class="game-card-bg" style="background-image: url('<%= gameCovers[g.game_title] || '' %>');"></div>
+        <div class="game-card-badges">
+          <% if (i === 0) { %><span class="badge badge-hot">🔥 #1 HOT</span><% } %>
+          <% if (i < 3) { %><span class="badge badge-top">⭐ TOP</span><% } %>
+        </div>
+        <div class="game-card-content">
+          <div class="game-card-title"><%= g.game_title %></div>
+          <div class="game-card-meta">
+            <span>📦 <%= g.mods_count %> модов</span>
+            <span>📥 <%= (g.total_downloads || 0).toLocaleString('ru-RU') %></span>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</section>
+
+<!-- POPULAR MODS -->
+<% if (typeof popularMods !== 'undefined' && popularMods && popularMods.length > 0) { %>
+<section style="padding: 0 0 60px;" data-fade>
+  <h2 class="section-title">🔥 Популярные модификации</h2>
+  <p class="section-subtitle">Самые скачиваемые моды прямо сейчас</p>
+
+  <div class="mods-carousel">
+    <% popularMods.forEach(function(mod) { %>
+      <a href="/mods/<%= mod.id %>" class="card mod-card<%= mod.is_nsfw ? ' nsfw-blur' : '' %>" style="text-decoration:none; color:inherit;">
+        <% if (mod.image_url) { %>
+          <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
+        <% } else { %>
+          <div class="card-img" style="background:var(--bg3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:2rem;">🎮</div>
+        <% } %>
+        <div class="card-body">
+          <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+            <span class="badge badge-game"><%= mod.game_title %></span>
+            <% if (mod.cat_name) { %><span class="badge badge-cat"><%= mod.cat_name %></span><% } %>
+            <% if (mod.is_nsfw) { %><span class="badge badge-nsfw">18+</span><% } %>
+          </div>
+          <div class="card-title"><%= mod.title %></div>
+          <div class="card-desc"><%= mod.description %></div>
+          <div class="card-meta">
+            <span>📥 <%= (mod.downloads_count || 0).toLocaleString('ru-RU') %></span>
+            <span>💾 <%= mod.file_size_mb %> МБ</span>
+          </div>
+        </div>
+      </a>
+    <% }); %>
+  </div>
+</section>
+<% } %>
+
+<%- include('partials/footer') %>

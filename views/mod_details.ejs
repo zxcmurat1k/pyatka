@@ -1,7 +1,149 @@
 <%- include('partials/header') %>
-    <h2><%= mod.title %></h2>
-    <p><%= mod.description %></p>
-    <% if (mod.image_url) { %><img src="<%= mod.image_url %>" width="200" alt="Cover"><% } %>
-    <h3>Reviews</h3>
-    <% reviews.forEach(r => { %><p>⭐ <%= r.rating %> - <%= r.comment %></p><% }) %>
-</body></html>
+
+<%
+  var stepsRaw = mod.install_instructions || '';
+  var steps = stepsRaw.split(/\\n|\n/).filter(function(s) { return s.trim(); });
+  steps = steps.map(function(s) { return s.replace(/^\d+[\.\)]\s*/, '').trim(); });
+%>
+
+<div style="margin-bottom:16px;">
+  <a href="/catalog" class="btn btn-ghost btn-sm">← Назад в каталог</a>
+</div>
+
+<div class="mod-detail-layout">
+  <!-- LEFT: Mod Content -->
+  <div>
+    <% if (mod.image_url) { %>
+      <img src="<%= mod.image_url %>" alt="<%= mod.title %>" 
+           class="mod-cover<%= mod.is_nsfw ? ' nsfw-blur' : '' %>" loading="lazy">
+    <% } %>
+
+    <div style="margin-top:24px;">
+      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+        <span class="badge badge-game"><%= mod.game_title %></span>
+        <% if (mod.cat_name) { %><span class="badge badge-cat"><%= mod.cat_name %></span><% } %>
+        <% if (mod.game_version) { %><span class="badge" style="background:var(--bg3); color:var(--text-muted);">v<%= mod.game_version %></span><% } %>
+        <% if (mod.is_nsfw) { %><span class="badge badge-nsfw">🔞 18+</span><% } %>
+      </div>
+
+      <h1 class="page-title"><%= mod.title %></h1>
+
+      <div style="color:var(--text-muted); font-size:0.95rem; line-height:1.7; margin-top:16px; margin-bottom:32px;">
+        <%= mod.description %>
+      </div>
+
+      <!-- Install Instructions -->
+      <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">📋 Инструкция по установке</h2>
+      <% if (steps.length > 0) { %>
+        <ol class="install-steps">
+          <% steps.forEach(function(step) { %>
+            <li class="install-step">
+              <span class="install-step-text"><%= step %></span>
+            </li>
+          <% }); %>
+        </ol>
+      <% } else { %>
+        <p style="color:var(--text-muted);">Инструкция не указана.</p>
+      <% } %>
+
+      <!-- Source URL -->
+      <% if (mod.source_url) { %>
+        <div style="margin-top:24px;">
+          <a href="<%= mod.source_url %>" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+            🔗 Скачать / Перейти к источнику
+          </a>
+        </div>
+      <% } %>
+
+      <!-- Reviews -->
+      <section class="reviews-section">
+        <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:20px;">
+          💬 Отзывы (<%= typeof reviews !== 'undefined' ? reviews.length : 0 %>)
+        </h2>
+        <% if (typeof reviews !== 'undefined' && reviews.length > 0) { %>
+          <% reviews.forEach(function(r) { %>
+            <div class="review-card" data-fade>
+              <div class="review-header">
+                <div class="review-avatar"><%= r.user_name ? r.user_name.charAt(0).toUpperCase() : '?' %></div>
+                <div>
+                  <div class="review-author"><%= r.user_name || 'Аноним' %></div>
+                  <div class="review-date"><%= r.created_at || '' %></div>
+                </div>
+                <div class="review-stars" style="margin-left:auto;">
+                  <% for (var s = 0; s < 5; s++) { %><%= s < r.rating ? '★' : '☆' %><% } %>
+                </div>
+              </div>
+              <div class="review-text"><%= r.comment %></div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <p style="color:var(--text-muted);">Пока нет отзывов. Будьте первым!</p>
+        <% } %>
+      </section>
+
+      <!-- Related Mods -->
+      <% if (typeof relatedMods !== 'undefined' && relatedMods && relatedMods.length > 0) { %>
+        <section style="margin-top:48px;">
+          <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:20px;">🎯 Похожие моды</h2>
+          <div class="mods-carousel">
+            <% relatedMods.forEach(function(rm) { %>
+              <a href="/mods/<%= rm.id %>" class="card mod-card" style="text-decoration:none; color:inherit;">
+                <% if (rm.image_url) { %>
+                  <img src="<%= rm.image_url %>" alt="<%= rm.title %>" class="card-img" loading="lazy">
+                <% } %>
+                <div class="card-body">
+                  <div class="card-title"><%= rm.title %></div>
+                  <div class="card-meta">
+                    <span>📥 <%= (rm.downloads_count || 0).toLocaleString('ru-RU') %></span>
+                  </div>
+                </div>
+              </a>
+            <% }); %>
+          </div>
+        </section>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- RIGHT: Mod Info Sidebar -->
+  <div class="mod-info-card" data-fade>
+    <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:16px;">📊 Информация</h3>
+
+    <div class="mod-info-row">
+      <span class="mod-info-label">Игра</span>
+      <span class="mod-info-value"><%= mod.game_title %></span>
+    </div>
+    <div class="mod-info-row">
+      <span class="mod-info-label">Версия</span>
+      <span class="mod-info-value"><%= mod.game_version %></span>
+    </div>
+    <% if (mod.cat_name) { %>
+    <div class="mod-info-row">
+      <span class="mod-info-label">Категория</span>
+      <span class="mod-info-value"><%= mod.cat_name %></span>
+    </div>
+    <% } %>
+    <div class="mod-info-row">
+      <span class="mod-info-label">Размер</span>
+      <span class="mod-info-value"><%= mod.file_size_mb %> МБ</span>
+    </div>
+    <div class="mod-info-row">
+      <span class="mod-info-label">Загрузки</span>
+      <span class="mod-info-value"><%= (mod.downloads_count || 0).toLocaleString('ru-RU') %></span>
+    </div>
+
+    <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+      <form action="/modpack/add/<%= mod.id %>" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-primary btn-block">🛠️ Добавить в сборку</button>
+      </form>
+      <% if (mod.source_url) { %>
+        <a href="<%= mod.source_url %>" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">
+          🔗 Источник
+        </a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
