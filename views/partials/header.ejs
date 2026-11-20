@@ -9,7 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body<% if (typeof mod !== 'undefined' && mod && mod.is_nsfw === 1) { %> data-mod-nsfw="1"<% } %>>
+<% 
+  var isNsfwActive = false;
+  if (typeof mod !== 'undefined' && mod && (mod.is_nsfw === 1 || mod.is_nsfw === '1' || mod.is_nsfw === true)) {
+    isNsfwActive = true;
+  }
+  if (typeof query !== 'undefined' && query) {
+    if (typeof query === 'string' && query.indexOf('nsfw=1') !== -1) {
+      isNsfwActive = true;
+    } else if (typeof query === 'object' && query.nsfw === '1') {
+      isNsfwActive = true;
+    }
+  }
+%>
+<body class="<%= isNsfwActive ? 'theme-nsfw' : '' %>"<% if (isNsfwActive) { %> data-mod-nsfw="1"<% } %>>
   <a href="#main" class="skip-link">Перейти к контенту</a>
 
   <!-- HEADER -->
