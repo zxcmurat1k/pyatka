@@ -850,89 +850,500 @@ html[data-mode="nsfw"] .badge-game {
 }
 
 /* ============================================================
-   HERO SECTION (Index)
+   1. FULLSCREEN HERO BANNER (RIOT GAMES STYLE)
    ============================================================ */
-.hero {
+.portal-hero {
   position: relative;
-  min-height: 80vh;
+  min-height: 78vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 60px 24px 40px;
+  background-size: cover;
+  background-position: 65% center;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(135deg, rgba(16, 22, 38, 0.95), rgba(11, 12, 16, 0.98)), url('/images/hero-sfw.jpg');
+  transition: background-image 0.5s ease;
   overflow: hidden;
+  padding: 60px 0;
+  width: 100vw;
+  margin-left: calc(-1 * var(--sidebar-w-closed));
 }
-.hero::before {
-  content: '';
+
+html[data-mode="nsfw"] .portal-hero {
+  background-image: linear-gradient(135deg, rgba(38, 13, 25, 0.95), rgba(13, 8, 12, 0.98)), url('/images/hero-nsfw.jpg');
+}
+
+.portal-hero-scrim {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 30%, rgba(56, 189, 248, 0.12), transparent),
-    radial-gradient(ellipse 40% 40% at 80% 70%, rgba(129, 140, 248, 0.08), transparent);
+  background: 
+    linear-gradient(90deg, rgba(11, 12, 16, 0.96) 0%, rgba(11, 12, 16, 0.82) 42%, rgba(11, 12, 16, 0.25) 85%),
+    linear-gradient(0deg, var(--bg-main) 0%, transparent 45%);
   pointer-events: none;
 }
-html[data-mode="nsfw"] .hero::before {
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 30%, rgba(244, 63, 94, 0.15), transparent),
-    radial-gradient(ellipse 40% 40% at 80% 70%, rgba(245, 158, 11, 0.08), transparent);
+html[data-mode="nsfw"] .portal-hero-scrim {
+  background: 
+    linear-gradient(90deg, rgba(13, 8, 12, 0.97) 0%, rgba(13, 8, 12, 0.84) 42%, rgba(13, 8, 12, 0.25) 85%),
+    linear-gradient(0deg, var(--bg-main) 0%, transparent 45%);
 }
-.hero-content {
+
+.portal-hero-wrap {
   position: relative;
-  z-index: 1;
-  max-width: 740px;
+  z-index: 2;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 40px;
+  padding-left: calc(var(--sidebar-w-closed) + 32px);
 }
-.hero-badge {
+
+.portal-hero-content {
+  max-width: 580px;
+}
+
+.portal-hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
-  border-radius: 30px;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  font-size: 13px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--accent-primary);
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  transition: all var(--transition);
 }
-html[data-mode="nsfw"] .hero-badge {
-  background: rgba(244, 63, 94, 0.15);
-  border-color: rgba(244, 63, 94, 0.3);
+html[data-mode="nsfw"] .portal-hero-badge {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #F43F5E;
 }
-.hero h1 {
-  font-size: clamp(2.4rem, 5.5vw, 4rem);
-  margin-bottom: 16px;
+
+.portal-hero-title {
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(38px, 5.2vw, 58px) !important;
+  line-height: 1.04 !important;
+  text-transform: uppercase !important;
+  margin-bottom: 18px;
+  color: var(--text-main);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
 }
-.hero h1 .accent {
-  color: var(--accent-primary);
-}
-.hero-desc {
+
+.portal-hero-desc {
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 16px;
+  line-height: 1.58;
   color: var(--text-muted);
-  max-width: 580px;
-  margin: 0 auto 32px;
+  margin-bottom: 32px;
 }
-.hero-buttons {
+
+.portal-hero-actions {
   display: flex;
-  gap: 12px;
-  justify-content: center;
+  align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
 }
-.hero-stats {
-  display: flex;
-  gap: 40px;
+
+/* Round Pill Buttons */
+.btn-pill {
+  border-radius: 999px !important;
+  padding: 12px 26px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+.btn-pill-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 48px;
+  margin-right: 6px;
+  flex-shrink: 0;
 }
-.hero-stat-num {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: var(--accent-primary);
-  font-family: 'Sofia Sans Condensed', sans-serif !important;
+.btn-pill-icon .nav-svg {
+  width: 16px;
+  height: 16px;
 }
-.hero-stat-label {
-  font-size: 13px;
+
+/* ============================================================
+   2. НАКЛОННАЯ КАРУСЕЛЬ ИГР С DRAG-TO-SCROLL
+   ============================================================ */
+.games-carousel-section {
+  padding: 48px 0 32px;
+  position: relative;
+}
+
+.carousel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.carousel-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.carousel-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
   color: var(--text-muted);
-  margin-top: 2px;
+}
+.carousel-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.carousel-arrow-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.carousel-arrow-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+.carousel-arrow-btn:active {
+  transform: scale(0.95);
+}
+
+/* Skew Viewport and Track */
+.skew-carousel-viewport {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding: 16px 8px 24px 8px;
+}
+.skew-carousel-track {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+  padding-bottom: 8px;
+}
+.skew-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.skew-carousel-track.grabbing {
+  cursor: grabbing !important;
+  scroll-behavior: auto !important;
+}
+
+/* Skewed Card (240x380px with -6deg tilt) */
+.skew-card {
+  width: 240px;
+  height: 380px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  transform: skewX(-6deg);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
+  cursor: pointer;
+  margin: 0 4px;
+}
+.skew-card:hover,
+.skew-card.active-selected {
+  transform: skewX(-6deg) translateY(-8px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+html[data-mode="nsfw"] .skew-card:hover,
+html[data-mode="nsfw"] .skew-card.active-selected {
+  border-color: #F43F5E;
+  box-shadow: 0 16px 40px rgba(244, 63, 94, 0.35);
+}
+
+/* Counter-skew inner container to keep text/graphics upright */
+.skew-card-inner {
+  position: absolute;
+  inset: -6px -28px;
+  transform: skewX(6deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px 28px;
+}
+
+.skew-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.62);
+  transition: transform 0.4s ease, filter 0.4s ease;
+  pointer-events: none;
+}
+.skew-card:hover .skew-card-img {
+  transform: scale(1.08);
+  filter: brightness(0.8);
+}
+
+.skew-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 12, 16, 0.05) 0%, rgba(11, 12, 16, 0.35) 45%, rgba(11, 12, 16, 0.96) 90%);
+  pointer-events: none;
+}
+html[data-mode="nsfw"] .skew-card-gradient {
+  background: linear-gradient(180deg, rgba(13, 8, 12, 0.05) 0%, rgba(13, 8, 12, 0.35) 45%, rgba(13, 8, 12, 0.96) 90%);
+}
+
+.skew-card-badges {
+  position: absolute;
+  top: 20px;
+  left: 28px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.skew-card-footer {
+  position: relative;
+  z-index: 2;
+}
+.skew-card-title {
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.35rem !important;
+  color: #FFFFFF;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+  margin-bottom: 6px;
+}
+.skew-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.skew-card-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-primary);
+}
+.skew-tag-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+/* ============================================================
+   3. ВСХОДЯЩИЙ ПОПОВЕР ПОДКАТЕГОРИЙ (SMART POSITIONING)
+   ============================================================ */
+.game-popover {
+  display: none;
+  position: absolute;
+  z-index: 1500;
+  width: 290px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+  padding: 18px 20px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+html[data-mode="nsfw"] .game-popover {
+  border-color: rgba(244, 63, 94, 0.35);
+  box-shadow: 0 20px 50px rgba(244, 63, 94, 0.25);
+}
+.game-popover.active {
+  display: block;
+  animation: popoverFade 0.24s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes popoverFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.game-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.game-popover-title {
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.25rem !important;
+  color: var(--text-main);
   text-transform: uppercase;
+}
+.game-popover-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color var(--transition);
+}
+.game-popover-close:hover {
+  color: var(--danger);
+}
+
+.game-popover-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--accent-primary);
+  color: var(--btn-primary-text) !important;
+  border-radius: var(--radius-sm);
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  text-transform: uppercase;
+  text-decoration: none;
+  margin-bottom: 12px;
+  transition: opacity var(--transition), transform var(--transition);
+}
+.game-popover-all:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+.game-popover-all .nav-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.game-popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.game-popover-cat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+}
+.game-popover-cat:hover {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent-primary);
+}
+html[data-mode="nsfw"] .game-popover-cat:hover {
+  background: rgba(244, 63, 94, 0.14);
+  color: #F43F5E;
+}
+.popover-cat-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.popover-cat-icon .nav-svg {
+  width: 17px;
+  height: 17px;
+}
+
+.game-popover-nsfw {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  color: #F43F5E !important;
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+.game-popover-nsfw:hover {
+  background: #F43F5E;
+  color: #FFFFFF !important;
+}
+.game-popover-nsfw .nav-svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================================
+   HERO & CAROUSEL RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+@media (max-width: 768px) {
+  .portal-hero {
+    min-height: 65vh;
+    padding: 36px 0;
+    margin-left: 0;
+    width: 100%;
+  }
+  .portal-hero-wrap {
+    padding: 0 20px;
+  }
+  .portal-hero-title {
+    font-size: 34px !important;
+  }
+  .skew-card {
+    width: 210px;
+    height: 330px;
+  }
+  /* Mobile Bottom Sheet for Game Popover */
+  .game-popover.active {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    border-radius: 20px 20px 0 0;
+    z-index: 3000;
+    padding: 22px 20px 28px 20px;
+    transform: none !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.8);
+  }
 }
 
 /* ============================================================

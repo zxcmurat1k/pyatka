@@ -337,4 +337,229 @@ document.addEventListener('DOMContentLoaded', () => {
       if (target) target.classList.add('active');
     });
   });
+
+  /* ============ 10. HERO BANNER SFW / 18+ TEXTS & ACCENTS ============ */
+  const heroBadge = document.getElementById('heroBadge');
+  const heroTitle = document.getElementById('heroTitle');
+  const heroDesc  = document.getElementById('heroDesc');
+
+  const HERO_DATA = {
+    sfw: {
+      badge: 'HORNYHO • КАТАЛОГ МОДОВ',
+      title: 'Меняй мир под себя, а не себя под мир',
+      desc: 'Проверенные модификации для любимых игр, сборка модпаков в пару кликов и честные оценки сообщества.'
+    },
+    nsfw: {
+      badge: 'HORNYHO 18+ • БЕЗ ЦЕНЗУРЫ',
+      title: 'Снимаем все ограничения. И не только их.',
+      desc: 'Режим 18+ активен: откровенные скины, кастомные модели и взрослые сборки без цензуры и блюра.'
+    }
+  };
+
+  function updateHeroTexts(mode) {
+    const data = HERO_DATA[mode] || HERO_DATA.sfw;
+    if (heroBadge) heroBadge.textContent = data.badge;
+    if (heroTitle) heroTitle.textContent = data.title;
+    if (heroDesc)  heroDesc.textContent  = data.desc;
+  }
+
+  // Initial update
+  updateHeroTexts(document.documentElement.getAttribute('data-mode') || 'sfw');
+
+  // Listen to mode changes without page reload
+  window.addEventListener('hornyho:modechange', (e) => {
+    const nextMode = e.detail && e.detail.mode ? e.detail.mode : 'sfw';
+    updateHeroTexts(nextMode);
+  });
+
+  /* ============ 11. SKEWED GAMES CAROUSEL (DRAG-TO-SCROLL & ARROWS) ============ */
+  const skewTrack = document.getElementById('skewTrack');
+  const carouselPrev = document.getElementById('carouselPrev');
+  const carouselNext = document.getElementById('carouselNext');
+
+  let isDragging = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let dragDisplacement = 0;
+  const DRAG_THRESHOLD = 8; // Порог смещения в px
+
+  if (skewTrack) {
+    // Arrow navigation: scroll by ~2 cards width (240px + 28px gap = 268px * 2 = 536px)
+    if (carouselPrev) {
+      carouselPrev.addEventListener('click', () => {
+        closeGamePopover();
+        skewTrack.scrollBy({ left: -540, behavior: 'smooth' });
+      });
+    }
+    if (carouselNext) {
+      carouselNext.addEventListener('click', () => {
+        closeGamePopover();
+        skewTrack.scrollBy({ left: 540, behavior: 'smooth' });
+      });
+    }
+
+    // Mouse drag-to-scroll on LMB
+    skewTrack.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      isDragging = true;
+      dragDisplacement = 0;
+      startX = e.pageX - skewTrack.offsetLeft;
+      scrollLeft = skewTrack.scrollLeft;
+      skewTrack.classList.add('grabbing');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging || !skewTrack) return;
+      e.preventDefault();
+      const x = e.pageX - skewTrack.offsetLeft;
+      const walk = (x - startX) * 1.4;
+      dragDisplacement = Math.abs(x - startX);
+      skewTrack.scrollLeft = scrollLeft - walk;
+
+      if (dragDisplacement > DRAG_THRESHOLD) {
+        closeGamePopover();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        if (skewTrack) skewTrack.classList.remove('grabbing');
+      }
+    });
+
+    skewTrack.addEventListener('mouseleave', () => {
+      if (isDragging) {
+        isDragging = false;
+        skewTrack.classList.remove('grabbing');
+      }
+    });
+  }
+
+  /* ============ 12. GAME SUB-CATEGORIES POPOVER ============ */
+  const gamePopover = document.getElementById('gamePopover');
+  const popoverTitle = document.getElementById('popoverTitle');
+  const popoverClose = document.getElementById('popoverClose');
+  const popoverAllMods = document.getElementById('popoverAllMods');
+  const popoverNsfwLink = document.getElementById('popoverNsfwLink');
+  let activeCard = null;
+
+  function openGamePopover(card, gameTitle) {
+    if (!gamePopover || !card) return;
+
+    if (activeCard) activeCard.classList.remove('active-selected');
+    activeCard = card;
+    card.classList.add('active-selected');
+
+    const encodedGame = encodeURIComponent(gameTitle);
+
+    if (popoverTitle) popoverTitle.textContent = gameTitle;
+    if (popoverAllMods) {
+      popoverAllMods.href = `/catalog?game=${encodedGame}`;
+    }
+    if (popoverNsfwLink) {
+      popoverNsfwLink.href = `/catalog?game=${encodedGame}&nsfw=1`;
+    }
+
+    // Update real slugs in categories list
+    const catLinks = gamePopover.querySelectorAll('.game-popover-cat');
+    catLinks.forEach(link => {
+      const slug = link.dataset.slug;
+      if (slug) {
+        link.href = `/catalog?game=${encodedGame}&category=${encodeURIComponent(slug)}`;
+      }
+    });
+
+    // Smart Positioning based on getBoundingClientRect()
+    gamePopover.classList.add('active');
+    gamePopover.setAttribute('aria-hidden', 'false');
+
+    if (window.innerWidth <= 768) {
+      gamePopover.style.left = '';
+      gamePopover.style.top = '';
+      return;
+    }
+
+    const cardRect = card.getBoundingClientRect();
+    const popoverWidth = 290;
+    const windowWidth = window.innerWidth;
+    const spaceRight = windowWidth - cardRect.right;
+
+    let leftPos, topPos;
+    if (spaceRight >= popoverWidth + 24) {
+      // Plenty of space on right
+      leftPos = cardRect.right + 12 + window.scrollX;
+    } else {
+      // Flip to left of card
+      leftPos = cardRect.left - popoverWidth - 12 + window.scrollX;
+    }
+
+    topPos = cardRect.top + window.scrollY;
+    if (topPos < window.scrollY + 10) topPos = window.scrollY + 10;
+
+    gamePopover.style.left = `${Math.max(10, leftPos)}px`;
+    gamePopover.style.top = `${topPos}px`;
+  }
+
+  function closeGamePopover() {
+    if (gamePopover && gamePopover.classList.contains('active')) {
+      gamePopover.classList.remove('active');
+      gamePopover.setAttribute('aria-hidden', 'true');
+    }
+    if (activeCard) {
+      activeCard.classList.remove('active-selected');
+      activeCard = null;
+    }
+  }
+
+  // Card click with drag threshold check
+  document.querySelectorAll('.skew-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (dragDisplacement > DRAG_THRESHOLD) {
+        e.preventDefault();
+        return;
+      }
+      e.stopPropagation();
+      const gameTitle = card.dataset.game;
+      if (gamePopover && gamePopover.classList.contains('active') && activeCard === card) {
+        closeGamePopover();
+      } else {
+        openGamePopover(card, gameTitle);
+      }
+    });
+
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openGamePopover(card, card.dataset.game);
+      }
+    });
+  });
+
+  if (popoverClose) {
+    popoverClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeGamePopover();
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (gamePopover && gamePopover.classList.contains('active')) {
+      if (!gamePopover.contains(e.target) && !e.target.closest('.skew-card')) {
+        closeGamePopover();
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeGamePopover();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (gamePopover && gamePopover.classList.contains('active') && activeCard) {
+      openGamePopover(activeCard, activeCard.dataset.game);
+    }
+  }, { passive: true });
 });
