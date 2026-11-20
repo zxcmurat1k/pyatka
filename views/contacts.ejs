@@ -1,34 +1,56 @@
 <%- include('partials/header') %>
 
-<h1 class="page-title">📬 Контакты</h1>
+<h1 class="page-title">Контакты</h1>
 <p class="page-subtitle">Свяжитесь с нами — мы всегда на связи</p>
 
 <div class="contacts-layout">
   <!-- Contact Info -->
   <div class="contacts-info" data-fade>
     <div class="contact-card">
-      <div class="contact-card-icon">📧</div>
+      <div class="contact-card-icon">
+        <svg class="ui-icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </div>
       <div>
         <div class="contact-card-title">Email</div>
         <div class="contact-card-text">support@hornyho.com</div>
       </div>
     </div>
+
     <div class="contact-card">
-      <div class="contact-card-icon">💬</div>
+      <div class="contact-card-icon">
+        <svg class="ui-icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
       <div>
         <div class="contact-card-title">Discord</div>
         <div class="contact-card-text">discord.gg/hornyho</div>
       </div>
     </div>
+
     <div class="contact-card">
-      <div class="contact-card-icon">📱</div>
+      <div class="contact-card-icon">
+        <svg class="ui-icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </div>
       <div>
         <div class="contact-card-title">Telegram</div>
         <div class="contact-card-text">@hornyho_mods</div>
       </div>
     </div>
+
     <div class="contact-card">
-      <div class="contact-card-icon">🕐</div>
+      <div class="contact-card-icon">
+        <svg class="ui-icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
       <div>
         <div class="contact-card-title">Время ответа</div>
         <div class="contact-card-text">Обычно в течение 24 часов</div>
@@ -39,7 +61,13 @@
   <!-- Contact Form -->
   <div data-fade>
     <div class="card" style="padding:32px;">
-      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:24px;">✉️ Написать нам</h3>
+      <h3 style="font-size:1.3rem; margin-bottom:24px; display:flex; align-items:center; gap:10px;">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        <span>Написать нам</span>
+      </h3>
 
       <form action="/contacts" method="POST" data-validate>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -64,7 +92,13 @@
           <textarea id="message" name="message" class="form-textarea" placeholder="Опишите ваш вопрос или предложение..." required></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block btn-lg">📤 Отправить</button>
+        <button type="submit" class="btn btn-primary btn-block btn-lg btn-pill">
+          <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          <span>Отправить</span>
+        </button>
       </form>
     </div>
   </div>

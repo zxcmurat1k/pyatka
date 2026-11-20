@@ -673,8 +673,271 @@ html[data-mode="nsfw"] .nsfw-switch-thumb {
 }
 
 /* ============================================================
-   FORMS & INPUTS
+   UI ICONS & STARS
    ============================================================ */
+.ui-icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  vertical-align: -3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.ui-icon-sm { width: 14px; height: 14px; vertical-align: -2px; }
+.ui-icon-lg { width: 48px; height: 48px; }
+
+.star-icon {
+  width: 16px;
+  height: 16px;
+  color: #64748B;
+  vertical-align: -2px;
+}
+.star-icon.filled {
+  color: #F59E0B;
+}
+
+/* ============================================================
+   POLISHED MOD CARDS WITH NSFW MEDIA BLUR IN SFW MODE
+   ============================================================ */
+.mod-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.mod-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+}
+html[data-mode="nsfw"] .mod-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 14px 36px rgba(244, 63, 94, 0.3);
+}
+
+.mod-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+.mod-card-media .card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+.mod-card:hover .mod-card-media .card-img {
+  transform: scale(1.04);
+}
+
+/* NSFW Media Blur in SFW Mode */
+html[data-mode="sfw"] .nsfw-media .card-img,
+html[data-mode="sfw"] .nsfw-media img {
+  filter: blur(18px);
+  transform: scale(1.08);
+}
+.nsfw-badge-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 8, 12, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 3;
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+.nsfw-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(244, 63, 94, 0.9);
+  color: #FFFFFF;
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+html[data-mode="sfw"] .nsfw-media .nsfw-badge-overlay {
+  display: flex;
+}
+html[data-mode="nsfw"] .nsfw-media .card-img,
+html[data-mode="nsfw"] .nsfw-media img {
+  filter: blur(0) !important;
+  transform: scale(1) !important;
+}
+html[data-mode="nsfw"] .nsfw-badge-overlay {
+  display: none !important;
+}
+
+/* Temporary unblur on click */
+.nsfw-media.unblurred-temp .card-img,
+.nsfw-media.unblurred-temp img {
+  filter: blur(0) !important;
+  transform: scale(1) !important;
+}
+.nsfw-media.unblurred-temp .nsfw-badge-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Card Overlays (Game Badge, 18+ Badge, Size Badge) */
+.media-badge-left {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  background: rgba(11, 12, 16, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.media-badge-right {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  background: #F43F5E;
+  color: #FFFFFF;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.4);
+}
+.media-badge-size {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 2;
+  background: rgba(11, 12, 16, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mod-card-body {
+  padding: 16px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.mod-card-title {
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 1.15rem !important;
+  line-height: 1.2;
+  margin-bottom: 6px;
+  color: var(--text-main);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+.mod-card:hover .mod-card-title {
+  color: var(--accent-primary);
+}
+.mod-card-desc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+.mod-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.mod-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ============================================================
+   EMPTY STATES
+   ============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  max-width: 520px;
+  margin: 0 auto;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+html[data-mode="nsfw"] .empty-state-icon {
+  background: rgba(244, 63, 94, 0.12);
+  color: #F43F5E;
+}
+.empty-state-icon .ui-icon-lg {
+  width: 32px;
+  height: 32px;
+}
+.empty-state-title {
+  font-family: 'Sofia Sans Condensed', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.7rem !important;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.empty-state-desc {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
 .form-group { margin-bottom: 20px; }
 .form-label {
   display: block;

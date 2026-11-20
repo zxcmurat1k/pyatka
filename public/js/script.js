@@ -161,6 +161,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Intercept clicks to 18+ content
   document.addEventListener('click', (e) => {
+    // Unblur temporary preview on badge click in SFW mode
+    const nsfwBadgeOverlay = e.target.closest('.nsfw-badge-overlay');
+    if (nsfwBadgeOverlay) {
+      e.preventDefault();
+      e.stopPropagation();
+      const parentMedia = nsfwBadgeOverlay.closest('.nsfw-media');
+      if (parentMedia) {
+        parentMedia.classList.toggle('unblurred-temp');
+      }
+      return;
+    }
+
     const nsfwLink = e.target.closest('a[href*="nsfw=1"], a[href*="nsfw=true"], .js-nsfw-gate');
     if (nsfwLink) {
       if (!isAgeVerified()) {
@@ -180,10 +192,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const drawerClose = document.getElementById('drawerClose');
 
   const gameCategories = [
-    { name: 'Скины и модели', slug: 'skins', icon: '🎨' },
-    { name: 'Технические и механизмы', slug: 'mechanisms', icon: '⚙️' },
-    { name: 'Интерфейс (HUD)', slug: 'ui-hud', icon: '🖥️' },
-    { name: 'Оптимизация и фиксы', slug: 'optimization', icon: '🔧' }
+    { 
+      name: 'Графика и текстуры', 
+      slug: 'graphics', 
+      icon: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' 
+    },
+    { 
+      name: 'Геймплей и механики', 
+      slug: 'gameplay', 
+      icon: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>' 
+    },
+    { 
+      name: 'Интерфейс (HUD)', 
+      slug: 'ui-hud', 
+      icon: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>' 
+    },
+    { 
+      name: 'Оптимизация и фиксы', 
+      slug: 'optimization', 
+      icon: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>' 
+    },
+    { 
+      name: 'Квесты и локации', 
+      slug: 'quests', 
+      icon: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>' 
+    }
   ];
 
   function openDrawer(gameName) {
@@ -194,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (drawerTitle) drawerTitle.textContent = gameName;
     if (drawerCta) {
       drawerCta.href = '/catalog?game=' + encoded;
-      drawerCta.textContent = '🎮 Смотреть все моды игры';
+      drawerCta.textContent = 'Смотреть все моды игры';
     }
 
     if (drawerCats) {

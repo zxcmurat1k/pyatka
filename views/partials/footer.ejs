@@ -15,12 +15,24 @@
   </footer>
 
   <!-- SCROLL TO TOP -->
-  <button class="scroll-top" id="scrollTop" aria-label="Наверх">↑</button>
+  <button class="scroll-top" id="scrollTop" aria-label="Наверх">
+    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
 
   <!-- AGE GATE MODAL -->
   <div class="age-modal-overlay" id="ageModal">
     <div class="age-modal" role="dialog" aria-modal="true" aria-labelledby="ageTitle" aria-describedby="ageDesc">
-      <div class="age-modal-icon">🔞</div>
+      <div class="age-modal-icon">
+        <svg class="ui-icon" style="width:52px;height:52px;color:var(--accent-nsfw);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="8" y1="9" x2="8" y2="15"></line>
+          <path d="M13.5 10a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1 0 3"></path>
+          <path d="M18 11v4"></path>
+          <path d="M16 13h4"></path>
+        </svg>
+      </div>
       <h2 class="age-modal-title" id="ageTitle">Подтверждение возраста (18+)</h2>
       <p class="age-modal-text" id="ageDesc">
         Вы переходите в закрытый раздел модификаций для взрослых. Вам уже исполнилось 18 лет?
@@ -37,7 +49,12 @@
   <aside class="drawer" id="gameDrawer" role="dialog" aria-modal="true" aria-label="Выбор категории игры">
     <div class="drawer-header">
       <h3 class="drawer-title" id="drawerTitle">Игра</h3>
-      <button type="button" class="drawer-close" id="drawerClose" aria-label="Закрыть панель">✕</button>
+      <button type="button" class="drawer-close" id="drawerClose" aria-label="Закрыть панель">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
     <div class="drawer-body">
       <a href="/catalog" class="drawer-cta" id="drawerCta">Смотреть все моды игры</a>
