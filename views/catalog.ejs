@@ -1,14 +1,146 @@
 <%- include('partials/header') %>
-    <h2>Mod Catalog</h2>
-    <ul>
-        <% mods.forEach(mod => { %>
-            <li>
-                <a href="/mods/<%= mod.id %>"><%= mod.title %></a> 
-                <form action="/modpack/add/<%= mod.id %>" method="POST" style="display:inline;">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button type="submit">Add to Builder</button>
-                </form>
-            </li>
-        <% }) %>
-    </ul>
-</body></html>
+
+<%
+  var q = typeof query !== 'undefined' && query ? query : {};
+  var searchQ = typeof q === 'string' ? q : (q.q || '');
+  var filterGame = q.game || '';
+  var filterCat = q.category || '';
+  var filterNsfw = q.nsfw || '';
+  var filterSort = q.sort || '';
+  var isNsfwFilter = filterNsfw === '1';
+%>
+
+<h1 class="page-title">🎮 Каталог модификаций</h1>
+<p class="page-subtitle">
+  <% if (searchQ) { %>Результаты по запросу: «<%= searchQ %>»<% } else { %>Все доступные моды для ваших любимых игр<% } %>
+</p>
+
+<div class="catalog-layout">
+  <!-- SIDEBAR FILTERS -->
+  <aside class="catalog-sidebar" data-fade>
+    <form action="/catalog" method="GET" id="filterForm">
+      <!-- Search -->
+      <div class="filter-section">
+        <div class="filter-title">🔍 Поиск</div>
+        <input type="text" name="q" class="form-input" placeholder="Название мода..." value="<%= searchQ %>">
+      </div>
+
+      <!-- Game filter -->
+      <div class="filter-section">
+        <div class="filter-title">🎮 Игра</div>
+        <select name="game" class="form-select" onchange="this.form.submit()">
+          <option value="">Все игры</option>
+          <% if (typeof gamesList !== 'undefined' && gamesList) { %>
+            <% gamesList.forEach(function(g) { %>
+              <option value="<%= g %>" <%= filterGame === g ? 'selected' : '' %>><%= g %></option>
+            <% }); %>
+          <% } else { %>
+            <option value="Deadlock" <%= filterGame === 'Deadlock' ? 'selected' : '' %>>Deadlock</option>
+            <option value="Minecraft" <%= filterGame === 'Minecraft' ? 'selected' : '' %>>Minecraft</option>
+            <option value="The Elder Scrolls V: Skyrim SE" <%= filterGame === 'The Elder Scrolls V: Skyrim SE' ? 'selected' : '' %>>Skyrim SE</option>
+            <option value="Cyberpunk 2077" <%= filterGame === 'Cyberpunk 2077' ? 'selected' : '' %>>Cyberpunk 2077</option>
+            <option value="Terraria" <%= filterGame === 'Terraria' ? 'selected' : '' %>>Terraria</option>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Category filter -->
+      <div class="filter-section">
+        <div class="filter-title">📂 Категория</div>
+        <select name="category" class="form-select" onchange="this.form.submit()">
+          <option value="">Все категории</option>
+          <% if (typeof categories !== 'undefined' && categories) { %>
+            <% categories.forEach(function(c) { %>
+              <option value="<%= c.slug %>" <%= filterCat === c.slug ? 'selected' : '' %>><%= c.name %></option>
+            <% }); %>
+          <% } else { %>
+            <option value="graphics" <%= filterCat === 'graphics' ? 'selected' : '' %>>Графика и текстуры</option>
+            <option value="gameplay" <%= filterCat === 'gameplay' ? 'selected' : '' %>>Геймплей и механики</option>
+            <option value="ui-hud" <%= filterCat === 'ui-hud' ? 'selected' : '' %>>Интерфейс (UI/HUD)</option>
+            <option value="optimization" <%= filterCat === 'optimization' ? 'selected' : '' %>>Оптимизация и фиксы</option>
+            <option value="quests" <%= filterCat === 'quests' ? 'selected' : '' %>>Квесты и локации</option>
+          <% } %>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div class="filter-section">
+        <div class="filter-title">📊 Сортировка</div>
+        <select name="sort" class="form-select" onchange="this.form.submit()">
+          <option value="" <%= filterSort === '' ? 'selected' : '' %>>По умолчанию</option>
+          <option value="popular" <%= filterSort === 'popular' ? 'selected' : '' %>>Популярные</option>
+          <option value="newest" <%= filterSort === 'newest' ? 'selected' : '' %>>Новые</option>
+          <option value="size" <%= filterSort === 'size' ? 'selected' : '' %>>По размеру</option>
+        </select>
+      </div>
+
+      <!-- NSFW toggle -->
+      <div class="filter-section">
+        <label class="toggle-wrap">
+          <input type="checkbox" name="nsfw" value="1" class="toggle-input" 
+                 <%= isNsfwFilter ? 'checked' : '' %>
+                 onchange="this.form.submit()">
+          <span class="toggle-slider"></span>
+          <span style="font-size:0.9rem; font-weight:600;">🔞 18+ контент</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-sm">Применить фильтры</button>
+    </form>
+  </aside>
+
+  <!-- MODS LIST -->
+  <div>
+    <div class="catalog-topbar">
+      <div class="catalog-results">
+        Найдено: <strong><%= typeof mods !== 'undefined' ? mods.length : 0 %></strong> модов
+      </div>
+    </div>
+
+    <div class="catalog-grid">
+      <% if (typeof mods !== 'undefined' && mods.length > 0) { %>
+        <% mods.forEach(function(mod) { %>
+          <div class="card mod-card<%= (mod.is_nsfw && !isNsfwFilter) ? ' nsfw-blur' : '' %>" data-fade>
+            <% if (mod.image_url) { %>
+              <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
+            <% } else { %>
+              <div class="card-img" style="background:var(--bg3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:2rem;">🎮</div>
+            <% } %>
+            <div class="card-body">
+              <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+                <span class="badge badge-game"><%= mod.game_title %></span>
+                <% if (mod.cat_name) { %><span class="badge badge-cat"><%= mod.cat_name %></span>
+                <% } else if (mod.cat_slug) { %><span class="badge badge-cat"><%= mod.cat_slug %></span><% } %>
+                <% if (mod.is_nsfw) { %><span class="badge badge-nsfw">18+</span><% } %>
+              </div>
+              <a href="/mods/<%= mod.id %>" style="text-decoration:none; color:inherit;">
+                <div class="card-title"><%= mod.title %></div>
+              </a>
+              <div class="card-desc"><%= mod.description %></div>
+              <div class="card-meta">
+                <span>📥 <%= (mod.downloads_count || 0).toLocaleString('ru-RU') %></span>
+                <span>💾 <%= mod.file_size_mb %> МБ</span>
+                <% if (mod.game_version) { %><span>v<%= mod.game_version %></span><% } %>
+              </div>
+            </div>
+            <div class="card-actions">
+              <a href="/mods/<%= mod.id %>" class="btn btn-secondary btn-sm" style="flex:1;">Подробнее</a>
+              <form action="/modpack/add/<%= mod.id %>" method="POST" style="flex:1;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-primary btn-sm btn-block">+ В сборку</button>
+              </form>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div style="grid-column: 1/-1; text-align:center; padding:60px 24px;">
+          <div style="font-size:3rem; margin-bottom:12px; opacity:0.4;">🔍</div>
+          <h3 style="color:var(--text-muted);">Моды не найдены</h3>
+          <p style="color:var(--text-dim); margin-top:8px;">Попробуйте изменить параметры поиска</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

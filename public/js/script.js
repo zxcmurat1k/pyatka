@@ -1,402 +1,257 @@
+/* ============================================================
+   HornyHo — Client-Side Logic
+   Theme toggle, Drawer, Age Gate, Validation, Scroll-to-top
+   ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
+  'use strict';
 
-  /* 1. HERO TYPING — фиксированный, без бага*/
-  const phrases = ['HTML & CSS', 'JavaScript', 'Node.js', 'Git & GitHub'];
-  let pi = 0, ci = 0, isDeleting = false, typingTimer = null;
-  const typingEl = document.getElementById('typing');
+  /* ============ 1. THEME TOGGLE (localStorage) ============ */
+  const themeBtn = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('theme');
 
-  function runTyping() {
-    const word = phrases[pi];
-    if (isDeleting) {
-      ci--;
-      typingEl.textContent = word.slice(0, ci);
-      if (ci <= 0) {
-        isDeleting = false;
-        pi = (pi + 1) % phrases.length;
-        typingTimer = setTimeout(runTyping, 300);
-        return;
-      }
-      typingTimer = setTimeout(runTyping, 55);
-    } else {
-      ci++;
-      typingEl.textContent = word.slice(0, ci);
-      if (ci >= word.length) {
-        isDeleting = true;
-        typingTimer = setTimeout(runTyping, 1400);
-        return;
-      }
-      typingTimer = setTimeout(runTyping, 100);
+  if (savedTheme === 'light') {
+    document.body.classList.add('light');
+  }
+
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+  }
+
+  /* ============ 2. MOBILE MENU TOGGLE ============ */
+  const menuToggle = document.getElementById('menuToggle');
+  const navMain = document.getElementById('navMain');
+
+  if (menuToggle && navMain) {
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.toggle('active');
+      navMain.classList.toggle('mobile-open');
+    });
+    // Close on nav link click
+    navMain.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        navMain.classList.remove('mobile-open');
+      });
+    });
+  }
+
+  /* ============ 3. NSFW THEME DETECTION ============ */
+  const urlParams = new URLSearchParams(window.location.search);
+  const isNsfwPage = urlParams.get('nsfw') === '1';
+  const modIsNsfw = document.body.dataset.modNsfw === '1';
+
+  if (isNsfwPage || modIsNsfw) {
+    document.body.classList.add('theme-nsfw');
+  }
+
+  /* ============ 4. AGE GATE MODAL ============ */
+  const ageModal = document.getElementById('ageModal');
+  const ageVerified = localStorage.getItem('ageVerified') === 'true';
+
+  function showAgeGate() {
+    if (ageModal && !ageVerified) {
+      ageModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
     }
   }
 
-  // Запускаем только ПОСЛЕ hero-анимации чтобы не было flash
-  setTimeout(runTyping, 1600);
+  function confirmAge() {
+    localStorage.setItem('ageVerified', 'true');
+    if (ageModal) {
+      ageModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    // Remove blur from NSFW images
+    document.querySelectorAll('.nsfw-blur').forEach(el => {
+      el.classList.remove('nsfw-blur');
+    });
+  }
 
-  /* 2. HERO INTRO — anime.js timeline*/
-  anime.timeline({ easing: 'easeOutExpo' })
-    .add({ targets: '.badge',    scale: [0, 1], duration: 650, easing: 'easeOutBack' })
-    .add({ targets: '#hero h1',  translateY: [-40, 0], opacity: [0, 1], duration: 850 }, '-=350')
-    .add({ targets: '.hero-sub', translateY: [15, 0],  opacity: [0, 1], duration: 650 }, '-=500')
-    .add({ targets: '.typing-wrap', opacity: [0, 1], duration: 400 }, '-=300')
-    .add({ targets: '.btn', scale: [0.8, 1], opacity: [0, 1], delay: anime.stagger(120), duration: 550 }, '-=200');
+  function denyAge() {
+    history.back();
+  }
 
-  anime({
-    targets: '#sidebar',
-    translateX: [-80, 0], opacity: [0, 1],
-    duration: 900, easing: 'easeOutExpo'
+  // Expose to HTML onclick
+  window.confirmAge = confirmAge;
+  window.denyAge = denyAge;
+
+  // Show age gate on NSFW pages
+  if ((isNsfwPage || modIsNsfw) && !ageVerified) {
+    showAgeGate();
+  }
+
+  // If age already verified, remove blurs
+  if (ageVerified) {
+    document.querySelectorAll('.nsfw-blur').forEach(el => {
+      el.classList.remove('nsfw-blur');
+    });
+  }
+
+  /* ============ 5. GAME CARD DRAWER ============ */
+  const drawerOverlay = document.getElementById('drawerOverlay');
+  const drawer = document.getElementById('gameDrawer');
+  const drawerTitle = document.getElementById('drawerTitle');
+  const drawerCta = document.getElementById('drawerCta');
+  const drawerCats = document.getElementById('drawerCats');
+  const drawerNsfwBtn = document.getElementById('drawerNsfwBtn');
+  const drawerClose = document.getElementById('drawerClose');
+
+  // Category definitions per game
+  const gameCategories = [
+    { name: 'Скины и модели', slug: 'skins', icon: '🎨' },
+    { name: 'Графика и текстуры', slug: 'graphics', icon: '✨' },
+    { name: 'Геймплей и механики', slug: 'gameplay', icon: '⚙️' },
+    { name: 'Интерфейс (HUD)', slug: 'ui-hud', icon: '🖥️' },
+    { name: 'Оптимизация и фиксы', slug: 'optimization', icon: '🔧' },
+    { name: 'Квесты и локации', slug: 'quests', icon: '🗺️' }
+  ];
+
+  function openDrawer(gameName) {
+    if (!drawer || !drawerOverlay) return;
+
+    const encoded = encodeURIComponent(gameName);
+
+    drawerTitle.textContent = gameName;
+    drawerCta.href = '/catalog?game=' + encoded;
+    drawerCta.textContent = '🎮 Смотреть все моды игры';
+
+    // Build category links
+    drawerCats.innerHTML = '';
+    gameCategories.forEach(cat => {
+      const a = document.createElement('a');
+      a.href = '/catalog?game=' + encoded + '&category=' + cat.slug;
+      a.className = 'drawer-cat-link';
+      a.innerHTML = '<span class="drawer-cat-icon">' + cat.icon + '</span>' + cat.name;
+      drawerCats.appendChild(a);
+    });
+
+    // NSFW button
+    if (drawerNsfwBtn) {
+      drawerNsfwBtn.href = '/catalog?game=' + encoded + '&nsfw=1';
+      drawerNsfwBtn.onclick = function(e) {
+        if (!ageVerified && localStorage.getItem('ageVerified') !== 'true') {
+          e.preventDefault();
+          showAgeGate();
+        }
+      };
+    }
+
+    drawerOverlay.classList.add('active');
+    drawer.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    if (drawerOverlay) drawerOverlay.classList.remove('active');
+    if (drawer) drawer.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Expose for HTML
+  window.openDrawer = openDrawer;
+
+  if (drawerClose) {
+    drawerClose.addEventListener('click', closeDrawer);
+  }
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener('click', closeDrawer);
+  }
+
+  // ESC to close drawer
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeDrawer();
+      if (ageModal && ageModal.classList.contains('active')) {
+        denyAge();
+      }
+    }
   });
 
-  /* 3. SCROLL REVEAL*/
-  const revealObserver = new IntersectionObserver((entries) => {
+  /* ============ 6. SCROLL-TO-TOP BUTTON ============ */
+  const scrollTopBtn = document.getElementById('scrollTop');
+  if (scrollTopBtn) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 400) {
+        scrollTopBtn.classList.add('visible');
+      } else {
+        scrollTopBtn.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /* ============ 7. FORM VALIDATION ============ */
+  document.querySelectorAll('form[data-validate]').forEach(form => {
+    form.addEventListener('submit', (e) => {
+      let valid = true;
+      // Clear old errors
+      form.querySelectorAll('.form-error').forEach(el => el.remove());
+      form.querySelectorAll('.form-input, .form-textarea').forEach(input => {
+        input.style.borderColor = '';
+      });
+
+      form.querySelectorAll('[required]').forEach(input => {
+        if (!input.value.trim()) {
+          valid = false;
+          input.style.borderColor = 'var(--danger)';
+          const err = document.createElement('div');
+          err.className = 'form-error';
+          err.textContent = 'Это поле обязательно';
+          input.parentNode.appendChild(err);
+        }
+      });
+
+      // Email validation
+      form.querySelectorAll('input[type="email"]').forEach(input => {
+        if (input.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
+          valid = false;
+          input.style.borderColor = 'var(--danger)';
+          const err = document.createElement('div');
+          err.className = 'form-error';
+          err.textContent = 'Некорректный email';
+          input.parentNode.appendChild(err);
+        }
+      });
+
+      if (!valid) e.preventDefault();
+    });
+  });
+
+  /* ============ 8. FADE-IN ON SCROLL ============ */
+  const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -40px 0px' };
+  const fadeObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        anime({ targets: entry.target, opacity: [0, 1], translateY: [40, 0], duration: 700, easing: 'easeOutCubic' });
-        revealObserver.unobserve(entry.target);
+        entry.target.classList.add('fade-in');
+        fadeObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12 });
+  }, observerOptions);
 
-  document.querySelectorAll('.section').forEach(s => {
-    s.style.opacity = 0;
-    revealObserver.observe(s);
+  document.querySelectorAll('[data-fade]').forEach(el => {
+    el.style.opacity = '0';
+    fadeObserver.observe(el);
   });
 
-  /* 4. SKILLS PANEL — "рендер" + "пепел" + типинг*/
-  const techItems   = document.querySelectorAll('.tech-item');
-  const techImg     = document.getElementById('techImg');
-  const techDesc    = document.getElementById('techDesc');
-  const ashCanvas   = document.getElementById('ashCanvas');
-  const ashCtx      = ashCanvas.getContext('2d');
+  /* ============ 9. TABS ============ */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.closest('.tabs-container');
+      if (!group) return;
 
-  let descTimer     = null;
-  let currentActive = techItems[0];
-  let isSwitching   = false;
+      group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      group.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-  //Утилита: печать текста символ за символом
-  function typeText(el, text, speed, onDone) {
-    clearTimeout(descTimer);
-    el.textContent = '';
-    let i = 0;
-    function tick() {
-      if (i < text.length) {
-        el.textContent += text[i++];
-        descTimer = setTimeout(tick, speed);
-      } else if (onDone) onDone();
-    }
-    tick();
-  }
-
-
-  function ashDissolve(img, onDone) {
-    cancelAnimationFrame(ashDissolve._raf);
-
-    const wrap = img.parentElement;
-    const W = wrap.clientWidth  || 300;
-    const H = wrap.clientHeight || 160;
-    ashCanvas.width  = W;
-    ashCanvas.height = H;
-    ashCtx.clearRect(0, 0, W, H);
-
-    // Показываю canvas, скрываю исходную картинку
-    ashCanvas.style.transition = 'opacity 0.08s ease';
-    ashCanvas.style.opacity = '1';
-    img.style.clipPath = 'inset(100% 0 0 0)';
-
-    // Генерирую частицы в области, где была видна картинка
-    const cx = W / 2, cy = H / 2;
-    const PARTICLE_COUNT = 70;
-    const accentColor = getComputedStyle(document.documentElement)
-      .getPropertyValue('--accent').trim() || '#38bdf8';
-
-    const pixels = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      pixels.push({
-        x: cx + (Math.random() - 0.5) * (W * 0.6),
-        y: cy + (Math.random() - 0.5) * (H * 0.6),
-        dx: (Math.random() - 0.5) * 80,
-        dy: Math.random() * 60 + 10,
-        size: 2 + Math.random() * 3,
-        delay: Math.random() * 150
-      });
-    }
-
-    const DURATION = 450; // мс
-    const start = performance.now();
-    let finished = false;
-
-    function draw(now) {
-      const elapsed = now - start;
-      ashCtx.clearRect(0, 0, W, H);
-      ashCtx.fillStyle = accentColor;
-
-      pixels.forEach(p => {
-        const t = Math.max(0, Math.min(1, (elapsed - p.delay) / DURATION));
-        const eased = t * t;
-        const px = p.x + p.dx * eased;
-        const py = p.y + p.dy * eased;
-        const alpha = 1 - eased;
-        if (alpha > 0) {
-          ashCtx.globalAlpha = alpha;
-          ashCtx.fillRect(px, py, p.size, p.size);
-        }
-      });
-      ashCtx.globalAlpha = 1;
-
-      if (elapsed < DURATION + 150 && !finished) {
-        ashDissolve._raf = requestAnimationFrame(draw);
-      } else if (!finished) {
-        finished = true;
-        ashCanvas.style.opacity = '0';
-        if (onDone) onDone();
-      }
-    }
-    ashDissolve._raf = requestAnimationFrame(draw);
-
-    setTimeout(() => {
-      if (!finished) {
-        finished = true;
-        cancelAnimationFrame(ashDissolve._raf);
-        ashCtx.clearRect(0, 0, W, H);
-        ashCanvas.style.opacity = '0';
-        if (onDone) onDone();
-      }
-    }, DURATION + 400);
-  }
-
-  function renderIn(img, src, onDone) {
-    let settled = false;
-    const fallback = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        startReveal();
-      }
-    }, 1500);
-
-    function startReveal() {
-      clearTimeout(fallback);
-      img.style.transition = 'none';
-      img.style.clipPath = 'inset(100% 0 0 0)';
-
-      void img.offsetWidth;
-
-      let finished = false;
-      function finishReveal() {
-        if (finished) return;
-        finished = true;
-        img.removeEventListener('transitionend', onTransitionEnd);
-        clearTimeout(revealFallback);
-        if (onDone) onDone();
-      }
-
-      function onTransitionEnd(e) {
-        if (e.propertyName === 'clip-path') finishReveal();
-      }
-      img.addEventListener('transitionend', onTransitionEnd);
-
-      img.style.transition = 'clip-path 0.7s ease-in-out';
-      img.style.clipPath = 'inset(0% 0 0 0)';
-
-      const revealFallback = setTimeout(finishReveal, 800);
-    }
-
-    img.onload = () => {
-      if (settled) return;
-      settled = true;
-      startReveal();
-    };
-    img.onerror = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(fallback);
-      if (onDone) onDone();
-    };
-
-    img.src = src;
-  }
-
-  //Переключение панели при клике
-  function switchTech(item) {
-    if (item === currentActive || isSwitching) return;
-    isSwitching = true;
-
-    const safetyTimeout = setTimeout(() => { isSwitching = false; }, 3000);
-
-    currentActive.classList.remove('active');
-    item.classList.add('active');
-    currentActive = item;
-
-    const newSrc  = item.dataset.img;
-    const newText = item.dataset.text;
-
-    // Остановить текущий типинг
-    clearTimeout(descTimer);
-    techDesc.textContent = '';
-
-    function finish() {
-      clearTimeout(safetyTimeout);
-      isSwitching = false;
-    }
-
-    // Рассыпать старую картинку, затем отрендерить новую
-    try {
-      ashDissolve(techImg, () => {
-        renderIn(techImg, newSrc, () => {
-          // Печатает текст с небольшой задержкой после рендера картинки
-          setTimeout(() => {
-            typeText(techDesc, newText, 28, finish);
-          }, 200);
-        });
-      });
-    } catch (e) {
-      console.error('switchTech error:', e);
-      techImg.style.clipPath = 'inset(0% 0 0 0)';
-      techImg.src = newSrc;
-      typeText(techDesc, newText, 28, finish);
-    }
-  }
-
-  techItems.forEach(item => {
-    item.addEventListener('click', () => switchTech(item));
+      btn.classList.add('active');
+      const target = document.getElementById(btn.dataset.tab);
+      if (target) target.classList.add('active');
+    });
   });
-
-  renderIn(techImg, currentActive.dataset.img, () => {
-    setTimeout(() => typeText(techDesc, currentActive.dataset.text, 28), 200);
-  });
-
-  /* 5. THEME TOGGLE — anime.js вращение иконки*/
-  const themeBtn = document.getElementById('themeBtn');
-  if (localStorage.getItem('theme') === 'light') document.body.classList.add('light');
-
-  themeBtn.addEventListener('click', () => {
-    const goingLight = !document.body.classList.contains('light');
-    const iconEl = themeBtn.querySelector(goingLight ? '.moon' : '.sun');
-    anime({ targets: iconEl, rotate: [0, 360], duration: 600, easing: 'easeOutBack' });
-    document.body.classList.toggle('light');
-    localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
-  });
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 't' && e.target.tagName !== 'INPUT') themeBtn.click();
-  });
-
 });
-/* ═══ GIT TERMINAL ═══ */
-  const termInput  = document.getElementById('termInput');
-  const termOutput = document.getElementById('termOutput');
-  const termBody   = document.getElementById('termBody');
-
-  if (termInput) {
-    termBody.addEventListener('click', () => termInput.focus());
-
-    const cmdHistory = [];
-    let histIdx = -1;
-
-    const GIT_COMMANDS = {
-      'git log': `<span class="c-yellow">commit a3f91bc</span> <span class="c-gray">(HEAD -> main, origin/main)</span>
-<span class="c-white">Author: Murat Izbasarov &lt;murat@devshowcase.ru&gt;</span>
-<span class="c-white">Date:   Sat Jun 21 14:32:11 2026 +0500</span>
-
-    <span class="c-white">feat: add contact form with Formspree integration</span>
-
-<span class="c-yellow">commit 7d2e4a1</span>
-<span class="c-white">Author: Roman Shangareev &lt;roman@devshowcase.ru&gt;</span>
-<span class="c-white">Date:   Fri Jun 20 18:15:44 2026 +0500</span>
-
-    <span class="c-white">style: redesign skills section with ash dissolve animation</span>
-
-<span class="c-yellow">commit 1bc88f0</span>
-<span class="c-white">Author: Murat Izbasarov &lt;murat@devshowcase.ru&gt;</span>
-<span class="c-white">Date:   Thu Jun 19 11:04:29 2026 +0500</span>
-
-    <span class="c-white">feat: add collapsible sidebar with theme toggle</span>`,
-
-      'git status': `<span class="c-white">On branch </span><span class="c-green">main</span>
-<span class="c-white">Your branch is up to date with </span><span class="c-blue">'origin/main'</span>
-
-<span class="c-white">Changes not staged for commit:</span>
-	<span class="c-red">modified:   assets/css/style.css</span>
-	<span class="c-red">modified:   assets/js/script.js</span>
-
-<span class="c-white">Untracked files:</span>
-	<span class="c-red">assets/img/</span>`,
-
-      'git branch': `<span class="c-green">* main</span>
-<span class="c-white">  feature/animations</span>
-<span class="c-white">  feature/contact-form</span>
-<span class="c-white">  hotfix/sidebar-mobile</span>`,
-
-      'git branch -a': `<span class="c-green">* main</span>
-<span class="c-white">  feature/animations</span>
-<span class="c-white">  feature/contact-form</span>
-<span class="c-red">  remotes/origin/HEAD</span> <span class="c-gray">-> origin/main</span>
-<span class="c-red">  remotes/origin/main</span>`,
-
-      'git diff': `<span class="c-yellow">diff --git a/assets/css/style.css b/assets/css/style.css</span>
-<span class="c-white">--- a/assets/css/style.css</span>
-<span class="c-white">+++ b/assets/css/style.css</span>
-<span class="c-blue">@@ -142,6 +142,18 @@</span>
-<span class="c-green">+.terminal-wrap {</span>
-<span class="c-green">+  max-width: 780px;</span>
-<span class="c-green">+  border-radius: 14px;</span>
-<span class="c-green">+}</span>`,
-
-      'git stash': `<span class="c-white">Saved working directory and index state</span>
-<span class="c-white">WIP on main: </span><span class="c-yellow">a3f91bc</span> <span class="c-white">feat: add contact form</span>`,
-
-      'git stash list': `<span class="c-yellow">stash@{0}</span><span class="c-white">: WIP on main: a3f91bc feat: add contact form</span>
-<span class="c-yellow">stash@{1}</span><span class="c-white">: WIP on feature/animations: 7d2e4a1 redesign skills section</span>`,
-
-      'git help': `<span class="c-white">Доступные команды:</span>
-
-  <span class="c-green">git log</span>         <span class="c-gray">— история коммитов</span>
-  <span class="c-green">git status</span>      <span class="c-gray">— состояние рабочей директории</span>
-  <span class="c-green">git branch</span>      <span class="c-gray">— список веток</span>
-  <span class="c-green">git branch -a</span>   <span class="c-gray">— все ветки включая удалённые</span>
-  <span class="c-green">git diff</span>        <span class="c-gray">— незакоммиченные изменения</span>
-  <span class="c-green">git stash</span>       <span class="c-gray">— сохранить изменения в стэш</span>
-  <span class="c-green">git stash list</span>  <span class="c-gray">— список стэшей</span>
-  <span class="c-green">clear</span>           <span class="c-gray">— очистить терминал</span>`,
-
-      'clear': '__CLEAR__',
-    };
-
-    const PROMPT = 'riba@devshowcase <span class="term-path">~/project</span> <span class="term-branch">(main)</span> $';
-
-    function addLine(cmd, outputHtml) {
-      const cmdLine = document.createElement('div');
-      cmdLine.className = 'term-line';
-      cmdLine.innerHTML = PROMPT + ' <span class="c-white">' + cmd + '</span>';
-      termOutput.appendChild(cmdLine);
-      if (outputHtml) {
-        const out = document.createElement('div');
-        out.className = 'term-output-block';
-        out.innerHTML = outputHtml;
-        termOutput.appendChild(out);
-        anime({ targets: out, opacity: [0, 1], translateY: [4, 0], duration: 250, easing: 'easeOutQuad' });
-      }
-      termBody.scrollTop = termBody.scrollHeight;
-    }
-
-    termInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const cmd = termInput.value.trim();
-        termInput.value = '';
-        histIdx = -1;
-        if (!cmd) return;
-        cmdHistory.unshift(cmd);
-        if (cmd === 'clear') { termOutput.innerHTML = ''; return; }
-        const output = GIT_COMMANDS[cmd];
-        if (output) {
-          addLine(cmd, output);
-        } else {
-          addLine(cmd, '<span class="c-red">zsh: command not found: ' + cmd + '</span>\n<span class="c-gray">Введи <span class="c-green">git help</span> для списка команд</span>');
-        }
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (histIdx < cmdHistory.length - 1) termInput.value = cmdHistory[++histIdx];
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        histIdx > 0 ? termInput.value = cmdHistory[--histIdx] : (histIdx = -1, termInput.value = '');
-      }
-    });
-  }

@@ -1,0 +1,53 @@
+    </div><!-- /.container -->
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-copy">© 2026 <%= typeof appName !== 'undefined' ? appName : 'HornyHo' %>. Все права защищены.</span>
+      <div class="footer-links">
+        <a href="/about">О проекте</a>
+        <a href="/faq">FAQ</a>
+        <a href="/privacy">Политика</a>
+        <a href="/contacts">Контакты</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCROLL TO TOP -->
+  <button class="scroll-top" id="scrollTop" aria-label="Наверх">↑</button>
+
+  <!-- AGE GATE MODAL -->
+  <div class="age-modal-overlay" id="ageModal">
+    <div class="age-modal" role="dialog" aria-labelledby="ageTitle" aria-describedby="ageDesc">
+      <div class="age-modal-icon">🔞</div>
+      <h2 class="age-modal-title" id="ageTitle">Подтверждение возраста (18+)</h2>
+      <p class="age-modal-text" id="ageDesc">
+        Вы переходите в закрытый раздел модификаций для взрослых.<br>
+        Данный контент предназначен исключительно для совершеннолетних пользователей.<br><br>
+        <strong>Вам уже исполнилось 18 лет?</strong>
+      </p>
+      <div class="age-modal-btns">
+        <button class="btn btn-nsfw btn-lg" onclick="confirmAge()">Да, мне есть 18+</button>
+        <button class="btn btn-secondary btn-lg" onclick="denyAge()">Нет, вернуться</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="gameDrawer" role="dialog" aria-label="Выбор категории игры">
+    <div class="drawer-header">
+      <h3 class="drawer-title" id="drawerTitle">Игра</h3>
+      <button class="drawer-close" id="drawerClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="drawer-body">
+      <a href="/catalog" class="drawer-cta" id="drawerCta">🎮 Смотреть все моды игры</a>
+      <div class="drawer-cat-list" id="drawerCats"></div>
+      <a href="/catalog?nsfw=1" class="drawer-nsfw-btn" id="drawerNsfwBtn">🔞 18+ Контент</a>
+    </div>
+  </aside>
+
+  <script src="/js/script.js"></script>
+</body>
+</html>
