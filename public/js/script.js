@@ -1,6 +1,6 @@
 /* ============================================================
    HornyHo — Client-Side Logic
-   Theme toggle, Drawer, Age Gate, Validation, Scroll-to-top
+   Theme toggle, Drawer, Age Gate 18+, Form Validation, Scroll-to-top
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
       menuToggle.classList.toggle('active');
       navMain.classList.toggle('mobile-open');
     });
-    // Close on nav link click
     navMain.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         menuToggle.classList.remove('active');
@@ -50,10 +49,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ============ 4. AGE GATE MODAL ============ */
   const ageModal = document.getElementById('ageModal');
-  const ageVerified = localStorage.getItem('ageVerified') === 'true';
+  let pendingNsfwUrl = null;
 
-  function showAgeGate() {
-    if (ageModal && !ageVerified) {
+  function isAgeVerified() {
+    return localStorage.getItem('ageVerified') === 'true';
+  }
+
+  function showAgeGate(targetUrl = null) {
+    if (ageModal) {
+      pendingNsfwUrl = targetUrl;
       ageModal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -65,31 +69,58 @@ document.addEventListener('DOMContentLoaded', () => {
       ageModal.classList.remove('active');
       document.body.style.overflow = '';
     }
-    // Remove blur from NSFW images
+    // Снимаем блюр со всех 18+ превью
     document.querySelectorAll('.nsfw-blur').forEach(el => {
       el.classList.remove('nsfw-blur');
     });
+    // Если переход был заблокирован — перенаправляем
+    if (pendingNsfwUrl) {
+      const url = pendingNsfwUrl;
+      pendingNsfwUrl = null;
+      window.location.href = url;
+    }
   }
 
   function denyAge() {
-    history.back();
+    if (ageModal) {
+      ageModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    pendingNsfwUrl = null;
+    if (window.history.length > 1) {
+      history.back();
+    } else {
+      window.location.href = '/';
+    }
   }
 
-  // Expose to HTML onclick
+  // Делаем доступными глобально для кнопок в модалке
   window.confirmAge = confirmAge;
   window.denyAge = denyAge;
+  window.showAgeGate = showAgeGate;
 
-  // Show age gate on NSFW pages
-  if ((isNsfwPage || modIsNsfw) && !ageVerified) {
+  // Если открыта NSFW-страница без подтвержденного возраста
+  if ((isNsfwPage || modIsNsfw) && !isAgeVerified()) {
     showAgeGate();
   }
 
-  // If age already verified, remove blurs
-  if (ageVerified) {
+  // Если возраст уже подтверждён — снимаем блюр сразу
+  if (isAgeVerified()) {
     document.querySelectorAll('.nsfw-blur').forEach(el => {
       el.classList.remove('nsfw-blur');
     });
   }
+
+  // Перехват кликов по ссылкам на 18+ контент
+  document.addEventListener('click', (e) => {
+    const nsfwLink = e.target.closest('a[href*="nsfw=1"], a[href*="nsfw=true"], .js-nsfw-gate');
+    if (nsfwLink) {
+      if (!isAgeVerified()) {
+        e.preventDefault();
+        showAgeGate(nsfwLink.href);
+      }
+    }
+  });
 
   /* ============ 5. GAME CARD DRAWER ============ */
   const drawerOverlay = document.getElementById('drawerOverlay');
@@ -100,14 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const drawerNsfwBtn = document.getElementById('drawerNsfwBtn');
   const drawerClose = document.getElementById('drawerClose');
 
-  // Category definitions per game
+  // Категории модов по ТЗ
   const gameCategories = [
     { name: 'Скины и модели', slug: 'skins', icon: '🎨' },
-    { name: 'Графика и текстуры', slug: 'graphics', icon: '✨' },
-    { name: 'Геймплей и механики', slug: 'gameplay', icon: '⚙️' },
+    { name: 'Технические и механизмы', slug: 'mechanisms', icon: '⚙️' },
     { name: 'Интерфейс (HUD)', slug: 'ui-hud', icon: '🖥️' },
-    { name: 'Оптимизация и фиксы', slug: 'optimization', icon: '🔧' },
-    { name: 'Квесты и локации', slug: 'quests', icon: '🗺️' }
+    { name: 'Оптимизация и фиксы', slug: 'optimization', icon: '🔧' }
   ];
 
   function openDrawer(gameName) {
@@ -115,27 +144,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const encoded = encodeURIComponent(gameName);
 
-    drawerTitle.textContent = gameName;
-    drawerCta.href = '/catalog?game=' + encoded;
-    drawerCta.textContent = '🎮 Смотреть все моды игры';
+    if (drawerTitle) drawerTitle.textContent = gameName;
+    if (drawerCta) {
+      drawerCta.href = '/catalog?game=' + encoded;
+      drawerCta.textContent = '🎮 Смотреть все моды игры';
+    }
 
-    // Build category links
-    drawerCats.innerHTML = '';
-    gameCategories.forEach(cat => {
-      const a = document.createElement('a');
-      a.href = '/catalog?game=' + encoded + '&category=' + cat.slug;
-      a.className = 'drawer-cat-link';
-      a.innerHTML = '<span class="drawer-cat-icon">' + cat.icon + '</span>' + cat.name;
-      drawerCats.appendChild(a);
-    });
+    // Рендерим категории для выбранной игры
+    if (drawerCats) {
+      drawerCats.innerHTML = '';
+      gameCategories.forEach(cat => {
+        const a = document.createElement('a');
+        a.href = '/catalog?game=' + encoded + '&category=' + encodeURIComponent(cat.slug);
+        a.className = 'drawer-cat-link';
+        a.innerHTML = '<span class="drawer-cat-icon">' + cat.icon + '</span><span>' + cat.name + '</span>';
+        drawerCats.appendChild(a);
+      });
+    }
 
-    // NSFW button
+    // Неоново-малиновая кнопка 18+ Контент внизу
     if (drawerNsfwBtn) {
-      drawerNsfwBtn.href = '/catalog?game=' + encoded + '&nsfw=1';
+      const nsfwUrl = '/catalog?game=' + encoded + '&nsfw=1';
+      drawerNsfwBtn.href = nsfwUrl;
       drawerNsfwBtn.onclick = function(e) {
-        if (!ageVerified && localStorage.getItem('ageVerified') !== 'true') {
+        if (!isAgeVerified()) {
           e.preventDefault();
-          showAgeGate();
+          showAgeGate(nsfwUrl);
         }
       };
     }
@@ -151,8 +185,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = '';
   }
 
-  // Expose for HTML
   window.openDrawer = openDrawer;
+  window.closeDrawer = closeDrawer;
 
   if (drawerClose) {
     drawerClose.addEventListener('click', closeDrawer);
@@ -161,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawerOverlay.addEventListener('click', closeDrawer);
   }
 
-  // ESC to close drawer
+  // ESC закрывает drawer и modal
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeDrawer();
@@ -191,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('form[data-validate]').forEach(form => {
     form.addEventListener('submit', (e) => {
       let valid = true;
-      // Clear old errors
       form.querySelectorAll('.form-error').forEach(el => el.remove());
       form.querySelectorAll('.form-input, .form-textarea').forEach(input => {
         input.style.borderColor = '';
@@ -203,24 +236,29 @@ document.addEventListener('DOMContentLoaded', () => {
           input.style.borderColor = 'var(--danger)';
           const err = document.createElement('div');
           err.className = 'form-error';
-          err.textContent = 'Это поле обязательно';
+          err.textContent = 'Это поле обязательно для заполнения';
           input.parentNode.appendChild(err);
         }
       });
 
-      // Email validation
       form.querySelectorAll('input[type="email"]').forEach(input => {
         if (input.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
           valid = false;
           input.style.borderColor = 'var(--danger)';
           const err = document.createElement('div');
           err.className = 'form-error';
-          err.textContent = 'Некорректный email';
+          err.textContent = 'Введите корректный адрес электронной почты';
           input.parentNode.appendChild(err);
         }
       });
 
-      if (!valid) e.preventDefault();
+      if (!valid) {
+        e.preventDefault();
+        const firstErr = form.querySelector('.form-error');
+        if (firstErr) {
+          firstErr.previousElementSibling?.focus();
+        }
+      }
     });
   });
 

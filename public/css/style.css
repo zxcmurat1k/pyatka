@@ -74,23 +74,23 @@ body.light {
 
 /* ---------- NSFW full-page theme ---------- */
 body.theme-nsfw {
-  --bg:           var(--nsfw-bg);
+  --bg:           #16070e;
   --bg2:          #1e091a;
   --bg3:          #2d0f1f;
-  --surface:      var(--nsfw-surface);
-  --card-bg:      var(--nsfw-card);
-  --card-border:  rgba(255, 30, 86, 0.15);
-  --text:         var(--nsfw-text);
-  --text-muted:   var(--nsfw-muted);
+  --surface:      #240c18;
+  --card-bg:      #240c18;
+  --card-border:  rgba(255, 30, 86, 0.2);
+  --text:         #fff1f2;
+  --text-muted:   #c4868e;
   --text-dim:     #8a4a55;
-  --accent:       var(--nsfw-accent);
+  --accent:       #ff1e56;
   --accent-hover: #ff4775;
-  --accent-glow:  var(--nsfw-glow);
-  --header-bg:    rgba(22, 7, 14, 0.9);
-  --header-border:rgba(255, 30, 86, 0.12);
+  --accent-glow:  rgba(255, 30, 86, 0.4);
+  --header-bg:    rgba(22, 7, 14, 0.92);
+  --header-border:rgba(255, 30, 86, 0.2);
   --footer-bg:    #0e0509;
   --input-bg:     #240c18;
-  --input-border: rgba(255, 30, 86, 0.2);
+  --input-border: rgba(255, 30, 86, 0.25);
   --shadow:       0 8px 32px rgba(0, 0, 0, 0.6);
   --overlay:      rgba(22, 7, 14, 0.8);
 }
@@ -538,7 +538,7 @@ body.light .theme-toggle .icon-moon { display: inline; }
   position: fixed; top: 0; right: 0;
   width: 380px; max-width: 90vw; height: 100%;
   background: rgba(24, 29, 53, 0.92);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-left: 1px solid var(--card-border);
   z-index: 2001;
   transform: translateX(100%);
