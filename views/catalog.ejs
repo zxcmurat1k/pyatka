@@ -10,7 +10,7 @@
   var isNsfwFilter = filterNsfw === '1';
 %>
 
-<h1 class="page-title">🎮 Каталог модификаций</h1>
+<h1 class="page-title">Каталог модификаций</h1>
 <p class="page-subtitle">
   <% if (searchQ) { %>Результаты по запросу: «<%= searchQ %>»<% } else { %>Все доступные моды для ваших любимых игр<% } %>
 </p>
@@ -21,13 +21,26 @@
     <form action="/catalog" method="GET" id="filterForm">
       <!-- Search -->
       <div class="filter-section">
-        <div class="filter-title">🔍 Поиск</div>
+        <div class="filter-title">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Поиск</span>
+        </div>
         <input type="text" name="q" class="form-input" placeholder="Название мода..." value="<%= searchQ %>">
       </div>
 
       <!-- Game filter -->
       <div class="filter-section">
-        <div class="filter-title">🎮 Игра</div>
+        <div class="filter-title">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>Игра</span>
+        </div>
         <select name="game" class="form-select" onchange="this.form.submit()">
           <option value="">Все игры</option>
           <% if (typeof gamesList !== 'undefined' && gamesList) { %>
@@ -46,7 +59,12 @@
 
       <!-- Category filter -->
       <div class="filter-section">
-        <div class="filter-title">📂 Категория</div>
+        <div class="filter-title">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Категория</span>
+        </div>
         <select name="category" class="form-select" onchange="this.form.submit()">
           <option value="">Все категории</option>
           <% if (typeof categories !== 'undefined' && categories) { %>
@@ -56,7 +74,7 @@
           <% } else { %>
             <option value="graphics" <%= filterCat === 'graphics' ? 'selected' : '' %>>Графика и текстуры</option>
             <option value="gameplay" <%= filterCat === 'gameplay' ? 'selected' : '' %>>Геймплей и механики</option>
-            <option value="ui-hud" <%= filterCat === 'ui-hud' ? 'selected' : '' %>>Интерфейс (UI/HUD)</option>
+            <option value="ui-hud" <%= filterCat === 'ui-hud' ? 'selected' : '' %>>Интерфейс (HUD)</option>
             <option value="optimization" <%= filterCat === 'optimization' ? 'selected' : '' %>>Оптимизация и фиксы</option>
             <option value="quests" <%= filterCat === 'quests' ? 'selected' : '' %>>Квесты и локации</option>
           <% } %>
@@ -65,7 +83,14 @@
 
       <!-- Sort -->
       <div class="filter-section">
-        <div class="filter-title">📊 Сортировка</div>
+        <div class="filter-title">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Сортировка</span>
+        </div>
         <select name="sort" class="form-select" onchange="this.form.submit()">
           <option value="" <%= filterSort === '' ? 'selected' : '' %>>По умолчанию</option>
           <option value="popular" <%= filterSort === 'popular' ? 'selected' : '' %>>Популярные</option>
@@ -81,7 +106,7 @@
                  <%= isNsfwFilter ? 'checked' : '' %>
                  onchange="this.form.submit()">
           <span class="toggle-slider"></span>
-          <span style="font-size:0.9rem; font-weight:600;">🔞 18+ контент</span>
+          <span style="font-size:14px; font-weight:600;">18+ контент</span>
         </label>
       </div>
 
@@ -100,43 +125,94 @@
     <div class="catalog-grid">
       <% if (typeof mods !== 'undefined' && mods.length > 0) { %>
         <% mods.forEach(function(mod) { %>
-          <div class="card mod-card<%= (mod.is_nsfw && !isNsfwFilter) ? ' nsfw-blur' : '' %>" data-fade>
-            <% if (mod.image_url) { %>
-              <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
-            <% } else { %>
-              <div class="card-img" style="background:var(--bg3); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:2rem;">🎮</div>
-            <% } %>
-            <div class="card-body">
-              <div style="display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
-                <span class="badge badge-game"><%= mod.game_title %></span>
-                <% if (mod.cat_name) { %><span class="badge badge-cat"><%= mod.cat_name %></span>
-                <% } else if (mod.cat_slug) { %><span class="badge badge-cat"><%= mod.cat_slug %></span><% } %>
-                <% if (mod.is_nsfw) { %><span class="badge badge-nsfw">18+</span><% } %>
-              </div>
-              <a href="/mods/<%= mod.id %>" style="text-decoration:none; color:inherit;">
-                <div class="card-title"><%= mod.title %></div>
-              </a>
-              <div class="card-desc"><%= mod.description %></div>
-              <div class="card-meta">
-                <span>📥 <%= (mod.downloads_count || 0).toLocaleString('ru-RU') %></span>
-                <span>💾 <%= mod.file_size_mb %> МБ</span>
-                <% if (mod.game_version) { %><span>v<%= mod.game_version %></span><% } %>
+          <div class="mod-card" data-fade>
+            <!-- Media Container with Aspect Ratio and NSFW Blur -->
+            <div class="mod-card-media<%= mod.is_nsfw ? ' nsfw-media' : '' %>">
+              <% if (mod.image_url) { %>
+                <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
+              <% } else { %>
+                <div class="card-img" style="background:var(--bg3); display:flex; align-items:center; justify-content:center; color:var(--text-dim);">
+                  <svg class="ui-icon" style="width:36px; height:36px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                    <path d="M6 12h4m-2-2v4"></path>
+                    <line x1="15" y1="11" x2="15.01" y2="11"></line>
+                    <line x1="18" y1="13" x2="18.01" y2="13"></line>
+                  </svg>
+                </div>
+              <% } %>
+
+              <!-- Overlays: Game Name, 18+ Badge, File Size -->
+              <span class="media-badge-left"><%= mod.game_title %></span>
+              <% if (mod.is_nsfw) { %>
+                <span class="media-badge-right">18+</span>
+                <div class="nsfw-badge-overlay" title="Нажмите, чтобы показать">
+                  <span class="nsfw-badge-pill">
+                    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                    <span>18+ • Скрыто</span>
+                  </span>
+                </div>
+              <% } %>
+              <span class="media-badge-size">
+                <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+                <%= mod.file_size_mb %> МБ
+              </span>
+            </div>
+
+            <!-- Card Content -->
+            <div class="mod-card-body">
+              <a href="/mods/<%= mod.id %>" class="mod-card-title"><%= mod.title %></a>
+              <div class="mod-card-desc"><%= mod.description %></div>
+              <div class="mod-card-meta">
+                <span>
+                  <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <%= (mod.downloads_count || 0).toLocaleString('ru-RU') %>
+                </span>
+                <% if (mod.cat_name) { %>
+                  <span class="badge badge-cat"><%= mod.cat_name %></span>
+                <% } else if (mod.cat_slug) { %>
+                  <span class="badge badge-cat"><%= mod.cat_slug %></span>
+                <% } %>
               </div>
             </div>
-            <div class="card-actions">
+
+            <!-- Card Actions -->
+            <div class="mod-card-actions">
               <a href="/mods/<%= mod.id %>" class="btn btn-secondary btn-sm" style="flex:1;">Подробнее</a>
               <form action="/modpack/add/<%= mod.id %>" method="POST" style="flex:1;">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn btn-primary btn-sm btn-block">+ В сборку</button>
+                <button type="submit" class="btn btn-primary btn-sm btn-block">
+                  <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>В сборку</span>
+                </button>
               </form>
             </div>
           </div>
         <% }); %>
       <% } else { %>
-        <div style="grid-column: 1/-1; text-align:center; padding:60px 24px;">
-          <div style="font-size:3rem; margin-bottom:12px; opacity:0.4;">🔍</div>
-          <h3 style="color:var(--text-muted);">Моды не найдены</h3>
-          <p style="color:var(--text-dim); margin-top:8px;">Попробуйте изменить параметры поиска</p>
+        <!-- 4. ОФОРМЛЕННЫЙ EMPTY STATE КАТАЛОГА -->
+        <div class="empty-state" data-fade>
+          <div class="empty-state-icon">
+            <svg class="ui-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+          </div>
+          <h2 class="empty-state-title">По этим фильтрам модов нет</h2>
+          <p class="empty-state-desc">Попробуйте изменить поисковый запрос или сбросить фильтры категорий и игр.</p>
+          <a href="/catalog" class="btn btn-primary btn-pill">Сбросить фильтры</a>
         </div>
       <% } %>
     </div>

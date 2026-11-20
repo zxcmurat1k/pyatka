@@ -5,18 +5,47 @@
   <div>
     <div class="profile-name"><%= user.name %></div>
     <div class="profile-role">
-      <span class="badge <%= user.role === 'admin' ? 'badge-hot' : 'badge-new' %>"><%= user.role === 'admin' ? '👑 Админ' : '👤 Пользователь' %></span>
+      <span class="badge <%= user.role === 'admin' ? 'badge-hot' : 'badge-new' %>">
+        <% if (user.role === 'admin') { %>
+          <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+          </svg>
+          <span>Администратор</span>
+        <% } else { %>
+          <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Пользователь</span>
+        <% } %>
+      </span>
     </div>
   </div>
 </div>
 
 <div class="tabs-container">
   <div class="tabs">
-    <button class="tab-btn active" data-tab="tabPacks">📦 Мои сборки</button>
+    <button class="tab-btn active" data-tab="tabPacks">
+      <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+      </svg>
+      <span>Мои сборки</span>
+    </button>
     <% if (typeof favorites !== 'undefined') { %>
-      <button class="tab-btn" data-tab="tabFavs">❤️ Избранное</button>
+      <button class="tab-btn" data-tab="tabFavs">
+        <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+        <span>Избранное</span>
+      </button>
     <% } %>
-    <button class="tab-btn" data-tab="tabSettings">⚙️ Настройки</button>
+    <button class="tab-btn" data-tab="tabSettings">
+      <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span>Настройки</span>
+    </button>
   </div>
 
   <!-- Tab: Modpacks -->
@@ -31,22 +60,27 @@
               <div class="builder-item-meta">
                 <span>Версия: <%= pack.target_game_version %></span>
                 &bull; <span>Метод: <%= pack.install_method %></span>
-                <% if (pack.total_size_mb) { %>&bull; <span>💾 <%= pack.total_size_mb %> МБ</span><% } %>
-                <% if (pack.created_at) { %>&bull; <span>📅 <%= pack.created_at %></span><% } %>
+                <% if (pack.total_size_mb) { %>&bull; <span><%= pack.total_size_mb %> МБ</span><% } %>
+                <% if (pack.created_at) { %>&bull; <span><%= pack.created_at %></span><% } %>
               </div>
             </div>
             <span class="badge <%= pack.status === 'completed' ? 'badge-new' : (pack.status === 'cancelled' ? 'badge-hot' : 'badge-top') %>">
-              <%= pack.status === 'new' ? '🆕 Новая' : (pack.status === 'in_progress' ? '⏳ В работе' : (pack.status === 'completed' ? '✅ Готова' : '❌ Отменена')) %>
+              <%= pack.status === 'new' ? 'Новая' : (pack.status === 'in_progress' ? 'В работе' : (pack.status === 'completed' ? 'Готова' : 'Отменена')) %>
             </span>
           </div>
         <% }); %>
       </div>
     <% } else { %>
-      <div class="builder-empty">
-        <div class="builder-empty-icon">📦</div>
-        <h3>Нет сохранённых сборок</h3>
-        <p style="color:var(--text-dim); margin:8px 0 20px;">Перейдите в конструктор, чтобы создать первую сборку</p>
-        <a href="/modpack" class="btn btn-primary">🛠️ Конструктор сборок</a>
+      <!-- 4. ОФОРМЛЕННЫЙ EMPTY STATE ПРОФИЛЯ -->
+      <div class="empty-state" data-fade>
+        <div class="empty-state-icon">
+          <svg class="ui-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+        </div>
+        <h2 class="empty-state-title">Нет сохранённых сборок</h2>
+        <p class="empty-state-desc">Создай свою первую уникальную сборку модификаций прямо в конструкторе.</p>
+        <a href="/modpack" class="btn btn-primary btn-pill">Открыть конструктор</a>
       </div>
     <% } %>
   </div>
@@ -55,24 +89,31 @@
   <% if (typeof favorites !== 'undefined') { %>
     <div class="tab-content" id="tabFavs">
       <% if (favorites && favorites.length > 0) { %>
-        <div class="mods-carousel">
+        <div class="catalog-grid">
           <% favorites.forEach(function(mod) { %>
-            <a href="/mods/<%= mod.id %>" class="card mod-card" style="text-decoration:none; color:inherit;">
-              <% if (mod.image_url) { %>
-                <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
-              <% } %>
-              <div class="card-body">
-                <div class="card-title"><%= mod.title %></div>
-                <div class="card-meta"><span><%= mod.game_title %></span></div>
+            <a href="/mods/<%= mod.id %>" class="mod-card" style="text-decoration:none; color:inherit;">
+              <div class="mod-card-media">
+                <% if (mod.image_url) { %>
+                  <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
+                <% } %>
+              </div>
+              <div class="mod-card-body">
+                <div class="mod-card-title"><%= mod.title %></div>
+                <div class="mod-card-meta"><span><%= mod.game_title %></span></div>
               </div>
             </a>
           <% }); %>
         </div>
       <% } else { %>
-        <div class="builder-empty">
-          <div class="builder-empty-icon">❤️</div>
-          <h3>Избранное пусто</h3>
-          <p style="color:var(--text-dim); margin-top:8px;">Добавляйте моды в избранное из каталога</p>
+        <div class="empty-state" data-fade>
+          <div class="empty-state-icon">
+            <svg class="ui-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </div>
+          <h2 class="empty-state-title">Избранное пусто</h2>
+          <p class="empty-state-desc">Находи топовые моды в каталоге и сохраняй их в избранное.</p>
+          <a href="/catalog" class="btn btn-outline btn-pill">Перейти в каталог</a>
         </div>
       <% } %>
     </div>
@@ -82,7 +123,7 @@
   <div class="tab-content" id="tabSettings">
     <div style="max-width:500px;">
       <div class="card" style="padding:24px;">
-        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:20px;">Аккаунт</h3>
+        <h3 style="font-size:1.2rem; margin-bottom:20px;">Аккаунт</h3>
         <div class="mod-info-row">
           <span class="mod-info-label">Имя</span>
           <span class="mod-info-value"><%= user.name %></span>
@@ -91,8 +132,15 @@
           <span class="mod-info-label">Роль</span>
           <span class="mod-info-value"><%= user.role %></span>
         </div>
-        <div style="margin-top:20px;">
-          <a href="/logout" class="btn btn-danger btn-sm">🚪 Выйти из аккаунта</a>
+        <div style="margin-top:24px;">
+          <a href="/logout" class="btn btn-danger btn-sm">
+            <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Выйти из аккаунта</span>
+          </a>
         </div>
       </div>
     </div>

@@ -1,28 +1,58 @@
 <%- include('../partials/header') %>
 
-<h1 class="page-title">👑 Панель администратора</h1>
+<h1 class="page-title">
+  <svg class="ui-icon" style="width:28px;height:28px;vertical-align:-4px;margin-right:6px;color:var(--accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+  </svg>
+  Панель администратора
+</h1>
 <p class="page-subtitle">Управление каталогом модов и пользователями</p>
 
 <!-- Stats -->
 <div class="admin-stats" data-fade>
   <div class="stat-card">
     <div class="stat-value"><%= stats.users %></div>
-    <div class="stat-label">👤 Пользователей</div>
+    <div class="stat-label">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      Пользователей
+    </div>
   </div>
   <div class="stat-card">
     <div class="stat-value"><%= stats.mods %></div>
-    <div class="stat-label">🎮 Модов</div>
+    <div class="stat-label">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+        <path d="M6 12h4m-2-2v4m7-3h.01m3 0h.01"></path>
+      </svg>
+      Модов
+    </div>
   </div>
   <% if (typeof stats.modpacks !== 'undefined') { %>
   <div class="stat-card">
     <div class="stat-value"><%= stats.modpacks %></div>
-    <div class="stat-label">📦 Сборок</div>
+    <div class="stat-label">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </svg>
+      Сборок
+    </div>
   </div>
   <% } %>
   <% if (typeof stats.reviews !== 'undefined') { %>
   <div class="stat-card">
     <div class="stat-value"><%= stats.reviews %></div>
-    <div class="stat-label">💬 Отзывов</div>
+    <div class="stat-label">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      Отзывов
+    </div>
   </div>
   <% } %>
 </div>
@@ -30,19 +60,34 @@
 <!-- Pending Reviews -->
 <% if (typeof pendingReviews !== 'undefined' && pendingReviews && pendingReviews.length > 0) { %>
 <section data-fade style="margin-bottom:40px;">
-  <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">⏳ Отзывы на модерации (<%= pendingReviews.length %>)</h2>
+  <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+    Отзывы на модерации (<%= pendingReviews.length %>)
+  </h2>
   <div class="builder-list">
     <% pendingReviews.forEach(function(r) { %>
       <div class="builder-item">
         <div class="builder-item-info">
-          <div class="builder-item-title">
-            ⭐<%= r.rating %> — <%= r.comment ? r.comment.substring(0, 80) : '' %><%= r.comment && r.comment.length > 80 ? '...' : '' %>
+          <div class="builder-item-title" style="display:flex; align-items:center; gap:6px;">
+            <svg class="ui-icon" style="color:var(--star-color, #fbbf24); fill:var(--star-color, #fbbf24); flex-shrink:0;" viewBox="0 0 24 24">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span><%= r.rating %> — <%= r.comment ? r.comment.substring(0, 80) : '' %><%= r.comment && r.comment.length > 80 ? '...' : '' %></span>
           </div>
           <div class="builder-item-meta">
             Мод ID: <%= r.mod_id %> &bull; Пользователь ID: <%= r.user_id %> &bull; <%= r.created_at || '' %>
           </div>
         </div>
-        <span class="badge badge-top">⏳ Ожидает</span>
+        <span class="badge badge-top">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Ожидает
+        </span>
       </div>
     <% }); %>
   </div>
@@ -52,7 +97,13 @@
 <!-- Add Mod Form -->
 <section data-fade>
   <div class="admin-form">
-    <h2 class="admin-form-title">➕ Добавить мод</h2>
+    <h2 class="admin-form-title" style="display:flex; align-items:center; gap:8px;">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Добавить мод
+    </h2>
 
     <form action="/admin/mods" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -104,7 +155,14 @@
         <input type="file" id="cover" name="cover" accept=".jpg,.jpeg,.png,.webp" class="form-input" style="padding:10px;">
       </div>
 
-      <button type="submit" class="btn btn-primary btn-lg btn-block">📤 Загрузить мод</button>
+      <button type="submit" class="btn btn-primary btn-lg btn-block">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        Загрузить мод
+      </button>
     </form>
   </div>
 </section>
