@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-mode="sfw">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="<%= typeof appName !== 'undefined' ? appName : 'HornyHo' %> — Каталог игровых модов и конструктор сборок">
   <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' | ' : '' %><%= typeof appName !== 'undefined' ? appName : 'HornyHo' %></title>
+  
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  
+  <!-- GOOGLE FONTS: Sofia Sans Condensed (600, 700, 800) + Inter (400, 500, 600) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sofia+Sans+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="/css/style.css">
+
+  <!-- INLINE THEME INIT (Prevent Flash of Unstyled Theme) -->
+  <script>
+    (function() {
+      try {
+        var mode = localStorage.getItem('hornyho_nsfw_mode');
+        if (!mode) {
+          var params = new URLSearchParams(window.location.search);
+          mode = params.get('nsfw') === '1' ? 'nsfw' : 'sfw';
+        }
+        document.documentElement.setAttribute('data-mode', mode);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <% 
   var isNsfwActive = false;
@@ -21,50 +41,155 @@
       isNsfwActive = true;
     }
   }
+  var safeAppName = typeof appName !== 'undefined' ? appName : 'HornyHo';
 %>
 <body class="<%= isNsfwActive ? 'theme-nsfw' : '' %>"<% if (isNsfwActive) { %> data-mod-nsfw="1"<% } %>>
   <a href="#main" class="skip-link">Перейти к контенту</a>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="logo">
-        <span class="logo-icon">🔥</span>
-        <span><%= typeof appName !== 'undefined' ? appName : 'HornyHo' %></span>
-      </a>
+  <!-- ==================== LEFT COLLAPSIBLE SIDEBAR ==================== -->
+  <aside class="site-sidebar" id="siteSidebar" aria-label="Боковая панель навигации">
+    <div class="sidebar-inner">
+      <!-- TOP: Logo / Brand -->
+      <div class="sidebar-brand-wrap">
+        <a href="/" class="sidebar-logo-link" aria-label="HornyHo Главная">
+          <img src="/images/logo.png" alt="HornyHo" class="sidebar-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <span class="sidebar-logo-fallback" style="display:none;" aria-hidden="true">H</span>
+          <span class="sidebar-logo-text"><%= safeAppName %></span>
+        </a>
+        <button type="button" class="sidebar-mobile-toggle" id="menuToggle" aria-label="Открыть меню навигации">
+          <svg class="menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
 
-      <nav class="nav-main" id="navMain" aria-label="Основная навигация">
-        <a href="/" class="<%= typeof currentPage !== 'undefined' && currentPage === 'index' ? 'active' : '' %>">Главная</a>
-        <a href="/catalog" class="<%= typeof currentPage !== 'undefined' && currentPage === 'catalog' ? 'active' : '' %>">Каталог</a>
-        <a href="/modpack" class="cart-link <%= typeof currentPage !== 'undefined' && currentPage === 'builder' ? 'active' : '' %>">
-          Сборки
+      <!-- SEARCH FORM (GET /catalog, input name="q") -->
+      <form action="/catalog" method="GET" class="sidebar-search-form" role="search">
+        <button type="submit" class="sidebar-search-btn" aria-label="Искать">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <input type="text" name="q" class="sidebar-search-input" placeholder="Поиск модов..." aria-label="Поиск по каталогу">
+      </form>
+
+      <!-- NAVIGATION LINKS -->
+      <nav class="sidebar-nav" id="sidebarNav" aria-label="Основная навигация">
+        <a href="/" class="sidebar-nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'index' ? 'active' : '' %>">
+          <span class="sidebar-link-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </span>
+          <span class="sidebar-link-text">Главная</span>
+        </a>
+
+        <a href="/catalog" class="sidebar-nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'catalog' ? 'active' : '' %>">
+          <span class="sidebar-link-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </span>
+          <span class="sidebar-link-text">Каталог</span>
+        </a>
+
+        <a href="/modpack" class="sidebar-nav-link cart-link <%= typeof currentPage !== 'undefined' && currentPage === 'builder' ? 'active' : '' %>">
+          <span class="sidebar-link-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </span>
+          <span class="sidebar-link-text">Модпак</span>
           <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
             <span class="cart-badge"><%= cartCount %></span>
           <% } %>
         </a>
-        <a href="/contacts" class="<%= typeof currentPage !== 'undefined' && currentPage === 'contacts' ? 'active' : '' %>">Контакты</a>
-        <% if (typeof user !== 'undefined' && user) { %>
-          <a href="/profile" class="<%= typeof currentPage !== 'undefined' && currentPage === 'profile' ? 'active' : '' %>">Профиль</a>
-          <% if (user.role === 'admin') { %>
-            <a href="/admin" class="<%= typeof currentPage !== 'undefined' && currentPage === 'admin' ? 'active' : '' %>">Админ</a>
-          <% } %>
-          <a href="/logout">Выйти</a>
-        <% } else { %>
-          <a href="/login" class="<%= typeof currentPage !== 'undefined' && currentPage === 'login' ? 'active' : '' %>">Войти</a>
+
+        <a href="/contacts" class="sidebar-nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'contacts' ? 'active' : '' %>">
+          <span class="sidebar-link-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </span>
+          <span class="sidebar-link-text">Контакты</span>
+        </a>
+
+        <% if (typeof user !== 'undefined' && user && user.role === 'admin') { %>
+          <a href="/admin" class="sidebar-nav-link <%= typeof currentPage !== 'undefined' && currentPage === 'admin' ? 'active' : '' %>">
+            <span class="sidebar-link-icon">
+              <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
+            <span class="sidebar-link-text">Админка</span>
+          </a>
         <% } %>
       </nav>
 
-      <div class="header-actions">
-        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
-          <span class="icon-sun">☀️</span>
-          <span class="icon-moon">🌙</span>
+      <!-- BOTTOM SECTION (PINNED VIA margin-top: auto) -->
+      <div class="sidebar-footer">
+        <!-- 18+ MODE TOGGLER -->
+        <button type="button" class="sidebar-nsfw-toggle" id="nsfwModeToggle" aria-label="Переключить режим 18+">
+          <span class="sidebar-link-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8.5 8.5v7"></path>
+              <path d="M15.5 8.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5z"></path>
+              <path d="M11 12h3"></path>
+            </svg>
+          </span>
+          <span class="sidebar-link-text">Режим 18+</span>
+          <span class="nsfw-switch-indicator" aria-hidden="true">
+            <span class="nsfw-switch-thumb"></span>
+          </span>
         </button>
-        <button class="menu-toggle" id="menuToggle" aria-label="Меню">
-          <span></span><span></span><span></span>
-        </button>
+
+        <!-- USER AUTH LINKS -->
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/profile" class="sidebar-nav-link sidebar-user-link <%= typeof currentPage !== 'undefined' && currentPage === 'profile' ? 'active' : '' %>" title="<%= user.name %>">
+            <span class="sidebar-link-icon">
+              <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <span class="sidebar-link-text"><%= user.name %></span>
+          </a>
+          <a href="/logout" class="sidebar-nav-link sidebar-logout-link" title="Выйти">
+            <span class="sidebar-link-icon">
+              <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </span>
+            <span class="sidebar-link-text">Выход</span>
+          </a>
+        <% } else { %>
+          <a href="/login" class="sidebar-nav-link sidebar-login-link <%= typeof currentPage !== 'undefined' && currentPage === 'login' ? 'active' : '' %>">
+            <span class="sidebar-link-icon">
+              <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+            </span>
+            <span class="sidebar-link-text">Войти</span>
+          </a>
+        <% } %>
       </div>
     </div>
-  </header>
+  </aside>
 
   <!-- MAIN CONTENT START -->
   <main id="main" class="main-content">

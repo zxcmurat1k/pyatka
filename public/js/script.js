@@ -1,50 +1,98 @@
 /* ============================================================
    HornyHo — Client-Side Logic
-   Theme toggle, Drawer, Age Gate 18+, Form Validation, Scroll-to-top
+   Theme Mode (SFW / 18+), Collapsible Sidebar, Age Gate, Drawer, Validation
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
-  /* ============ 1. THEME TOGGLE (localStorage) ============ */
-  const themeBtn = document.getElementById('themeToggle');
-  const savedTheme = localStorage.getItem('theme');
-
-  if (savedTheme === 'light') {
-    document.body.classList.add('light');
+  /* ============ 1. THEME MODE TOGGLE (SFW / 18+) ============ */
+  function getStoredMode() {
+    return localStorage.getItem('hornyho_nsfw_mode') || 'sfw';
   }
 
-  if (themeBtn) {
-    themeBtn.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-      const isLight = document.body.classList.contains('light');
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  function applyMode(mode) {
+    document.documentElement.setAttribute('data-mode', mode);
+    localStorage.setItem('hornyho_nsfw_mode', mode);
+
+    // Sync theme-nsfw class on body for styles relying on it
+    if (mode === 'nsfw') {
+      document.body.classList.add('theme-nsfw');
+    } else {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isNsfwPage = urlParams.get('nsfw') === '1';
+      const modIsNsfw = document.body.dataset.modNsfw === '1';
+      if (!isNsfwPage && !modIsNsfw) {
+        document.body.classList.remove('theme-nsfw');
+      }
+    }
+
+    // Update toggle switch indicator UI
+    const toggleBtns = document.querySelectorAll('.sidebar-nsfw-toggle, #nsfwModeToggle');
+    toggleBtns.forEach(btn => {
+      if (mode === 'nsfw') {
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.setAttribute('aria-pressed', 'false');
+      }
     });
+
+    // Custom event dispatch as requested by specification
+    window.dispatchEvent(new CustomEvent('hornyho:modechange', { detail: { mode } }));
   }
 
-  /* ============ 2. MOBILE MENU TOGGLE ============ */
+  // Initialize mode
+  const initialMode = getStoredMode();
+  applyMode(initialMode);
+
+  // Bind click listener to 18+ toggle buttons
+  document.querySelectorAll('.sidebar-nsfw-toggle, #nsfwModeToggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const current = document.documentElement.getAttribute('data-mode') || 'sfw';
+      const nextMode = current === 'nsfw' ? 'sfw' : 'nsfw';
+
+      if (nextMode === 'nsfw' && localStorage.getItem('ageVerified') !== 'true') {
+        if (typeof showAgeGate === 'function') {
+          showAgeGate();
+        }
+      }
+
+      applyMode(nextMode);
+    });
+  });
+
+  /* ============ 2. MOBILE SIDEBAR BURGER TOGGLE ============ */
   const menuToggle = document.getElementById('menuToggle');
-  const navMain = document.getElementById('navMain');
+  const siteSidebar = document.getElementById('siteSidebar');
 
-  if (menuToggle && navMain) {
-    menuToggle.addEventListener('click', () => {
-      menuToggle.classList.toggle('active');
-      navMain.classList.toggle('mobile-open');
+  if (menuToggle && siteSidebar) {
+    menuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      siteSidebar.classList.toggle('mobile-open');
     });
-    navMain.querySelectorAll('a').forEach(link => {
+
+    // Close mobile sidebar on navigation link click
+    siteSidebar.querySelectorAll('.sidebar-nav-link').forEach(link => {
       link.addEventListener('click', () => {
-        menuToggle.classList.remove('active');
-        navMain.classList.remove('mobile-open');
+        siteSidebar.classList.remove('mobile-open');
       });
     });
+
+    // Close when clicking outside of mobile open sidebar
+    document.addEventListener('click', (e) => {
+      if (siteSidebar.classList.contains('mobile-open') && !siteSidebar.contains(e.target)) {
+        siteSidebar.classList.remove('mobile-open');
+      }
+    });
   }
 
-  /* ============ 3. NSFW THEME DETECTION ============ */
+  /* ============ 3. NSFW THEME DETECTION FROM URL / DATA ============ */
   const urlParams = new URLSearchParams(window.location.search);
   const isNsfwPage = urlParams.get('nsfw') === '1';
   const modIsNsfw = document.body.dataset.modNsfw === '1';
 
   if (isNsfwPage || modIsNsfw) {
-    document.body.classList.add('theme-nsfw');
+    applyMode('nsfw');
   }
 
   /* ============ 4. AGE GATE MODAL ============ */
@@ -69,11 +117,11 @@ document.addEventListener('DOMContentLoaded', () => {
       ageModal.classList.remove('active');
       document.body.style.overflow = '';
     }
-    // Снимаем блюр со всех 18+ превью
+    // Remove blur from all NSFW previews
     document.querySelectorAll('.nsfw-blur').forEach(el => {
       el.classList.remove('nsfw-blur');
     });
-    // Если переход был заблокирован — перенаправляем
+    // Redirect if a blocked navigation URL was stored
     if (pendingNsfwUrl) {
       const url = pendingNsfwUrl;
       pendingNsfwUrl = null;
@@ -87,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.style.overflow = '';
     }
     pendingNsfwUrl = null;
+    applyMode('sfw');
     if (window.history.length > 1) {
       history.back();
     } else {
@@ -94,24 +143,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Делаем доступными глобально для кнопок в модалке
   window.confirmAge = confirmAge;
   window.denyAge = denyAge;
   window.showAgeGate = showAgeGate;
 
-  // Если открыта NSFW-страница без подтвержденного возраста
+  // Show age gate if on NSFW page without verified age
   if ((isNsfwPage || modIsNsfw) && !isAgeVerified()) {
     showAgeGate();
   }
 
-  // Если возраст уже подтверждён — снимаем блюр сразу
+  // If age already verified, lift blurs immediately
   if (isAgeVerified()) {
     document.querySelectorAll('.nsfw-blur').forEach(el => {
       el.classList.remove('nsfw-blur');
     });
   }
 
-  // Перехват кликов по ссылкам на 18+ контент
+  // Intercept clicks to 18+ content
   document.addEventListener('click', (e) => {
     const nsfwLink = e.target.closest('a[href*="nsfw=1"], a[href*="nsfw=true"], .js-nsfw-gate');
     if (nsfwLink) {
@@ -131,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const drawerNsfwBtn = document.getElementById('drawerNsfwBtn');
   const drawerClose = document.getElementById('drawerClose');
 
-  // Категории модов по ТЗ
   const gameCategories = [
     { name: 'Скины и модели', slug: 'skins', icon: '🎨' },
     { name: 'Технические и механизмы', slug: 'mechanisms', icon: '⚙️' },
@@ -150,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
       drawerCta.textContent = '🎮 Смотреть все моды игры';
     }
 
-    // Рендерим категории для выбранной игры
     if (drawerCats) {
       drawerCats.innerHTML = '';
       gameCategories.forEach(cat => {
@@ -162,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Неоново-малиновая кнопка 18+ Контент внизу
     if (drawerNsfwBtn) {
       const nsfwUrl = '/catalog?game=' + encoded + '&nsfw=1';
       drawerNsfwBtn.href = nsfwUrl;
@@ -195,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawerOverlay.addEventListener('click', closeDrawer);
   }
 
-  // ESC закрывает drawer и modal
+  // ESC to close drawer and modal
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeDrawer();
