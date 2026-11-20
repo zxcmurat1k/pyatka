@@ -1,89 +1,224 @@
 <%- include('partials/header') %>
+</div><!-- закрываем .container из header.ejs для полноэкранного Hero-баннера -->
 
-<!-- HERO SECTION -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="hero-badge" data-fade>🔥 Каталог модов для PC-игр</div>
-    <h1 data-fade>Создай свою <span class="accent">идеальную сборку</span> модов</h1>
-    <p class="hero-desc" data-fade>
-      Находи лучшие модификации, собирай модпаки в один клик и делись ими с сообществом.
-      <%= typeof games !== 'undefined' && games ? games.length : 5 %> игр в каталоге.
-    </p>
-    <div class="hero-buttons" data-fade>
-      <a href="/catalog" class="btn btn-primary btn-lg">🎮 Открыть каталог</a>
-      <a href="/modpack" class="btn btn-ghost btn-lg">🛠️ Конструктор сборок</a>
-    </div>
-    <% if (typeof games !== 'undefined' && games && games.length > 0) { %>
-      <div class="hero-stats" data-fade>
-        <% var totalMods = 0, totalDl = 0; %>
-        <% games.forEach(function(g) { totalMods += (g.mods_count || 0); totalDl += (g.total_downloads || 0); }); %>
-        <div>
-          <div class="hero-stat-num"><%= totalMods %></div>
-          <div class="hero-stat-label">модификаций</div>
-        </div>
-        <div>
-          <div class="hero-stat-num"><%= games.length %></div>
-          <div class="hero-stat-label">игр</div>
-        </div>
-        <div>
-          <div class="hero-stat-num"><%= totalDl.toLocaleString('ru-RU') %></div>
-          <div class="hero-stat-label">загрузок</div>
-        </div>
+<%
+  var defaultGames = [
+    { game_title: 'Deadlock', mods_count: 42, total_downloads: 12800 },
+    { game_title: 'Minecraft', mods_count: 156, total_downloads: 89400 },
+    { game_title: 'The Elder Scrolls V: Skyrim SE', mods_count: 98, total_downloads: 45200 },
+    { game_title: 'Cyberpunk 2077', mods_count: 67, total_downloads: 31500 },
+    { game_title: 'Terraria', mods_count: 83, total_downloads: 27600 }
+  ];
+  var displayGames = (typeof games !== 'undefined' && games && games.length > 0) ? games : defaultGames;
+
+  var gameSlugs = {
+    'Deadlock': 'deadlock',
+    'Minecraft': 'minecraft',
+    'The Elder Scrolls V: Skyrim SE': 'skyrim',
+    'Cyberpunk 2077': 'cyberpunk-2077',
+    'Terraria': 'terraria'
+  };
+
+  var gameOnlineCovers = {
+    'Deadlock': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1422450/header.jpg',
+    'Minecraft': 'https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/MC-EDU_Game-Image_Standard.jpg',
+    'The Elder Scrolls V: Skyrim SE': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/489830/header.jpg',
+    'Cyberpunk 2077': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg',
+    'Terraria': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/105600/header.jpg'
+  };
+%>
+
+<!-- ==================== 1. FULLSCREEN HERO BANNER (RIOT GAMES STYLE) ==================== -->
+<section class="portal-hero" id="portalHero">
+  <div class="portal-hero-scrim"></div>
+  <div class="portal-hero-wrap">
+    <div class="portal-hero-content">
+      <div class="portal-hero-badge" id="heroBadge">HORNYHO • КАТАЛОГ МОДОВ</div>
+      <h1 class="portal-hero-title" id="heroTitle">Меняй мир под себя, а не себя под мир</h1>
+      <p class="portal-hero-desc" id="heroDesc">
+        Проверенные модификации для любимых игр, сборка модпаков в пару кликов и честные оценки сообщества.
+      </p>
+      <div class="portal-hero-actions">
+        <a href="/catalog" class="btn btn-primary btn-pill">
+          <span class="btn-pill-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </span>
+          <span>Открыть каталог</span>
+        </a>
+        <a href="/modpack" class="btn btn-outline btn-pill">
+          <span>Собрать модпак</span>
+        </a>
       </div>
-    <% } %>
+    </div>
   </div>
 </section>
-</div><!-- close container from header to allow full-width hero -->
 
-<!-- TOP GAMES -->
+<!-- Открываем .container обратно для каталожных секций -->
 <div class="container">
-<section style="padding: 40px 0 60px;" data-fade>
-  <h2 class="section-title">🎮 Топ-5 популярных игр</h2>
-  <p class="section-subtitle">Выбери игру, чтобы увидеть категории модов</p>
 
-  <div class="games-grid">
-    <% 
-      var gameCovers = {
-        'Deadlock': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1422450/header.jpg',
-        'Minecraft': 'https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/MC-EDU_Game-Image_Standard.jpg',
-        'The Elder Scrolls V: Skyrim SE': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/489830/header.jpg',
-        'Cyberpunk 2077': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg',
-        'Terraria': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/105600/header.jpg'
-      };
-      var defaultGames = [
-        { game_title: 'Deadlock', mods_count: 42, total_downloads: 12800 },
-        { game_title: 'Minecraft', mods_count: 156, total_downloads: 89400 },
-        { game_title: 'The Elder Scrolls V: Skyrim SE', mods_count: 98, total_downloads: 45200 },
-        { game_title: 'Cyberpunk 2077', mods_count: 67, total_downloads: 31500 },
-        { game_title: 'Terraria', mods_count: 83, total_downloads: 27600 }
-      ];
-      var displayGames = (typeof games !== 'undefined' && games && games.length > 0) ? games : defaultGames;
-    %>
-    <% displayGames.forEach(function(g, i) { %>
-      <div class="game-card" onclick="openDrawer('<%= g.game_title %>')" tabindex="0" role="button"
-           aria-label="Открыть категории для <%= g.game_title %>"
-           onkeydown="if(event.key==='Enter')openDrawer('<%= g.game_title %>')">
-        <div class="game-card-bg" style="background-image: url('<%= gameCovers[g.game_title] || '' %>');"></div>
-        <div class="game-card-badges">
-          <% if (i === 0) { %><span class="badge badge-hot">🔥 #1 HOT</span><% } %>
-          <% if (i < 3) { %><span class="badge badge-top">⭐ TOP</span><% } %>
-        </div>
-        <div class="game-card-content">
-          <div class="game-card-title"><%= g.game_title %></div>
-          <div class="game-card-meta">
-            <span>📦 <%= g.mods_count %> модов</span>
-            <span>📥 <%= (g.total_downloads || 0).toLocaleString('ru-RU') %></span>
+<!-- ==================== 2. СЕКЦИЯ «ИГРЫ В КАТАЛОГЕ» (НАКЛОННАЯ КАРУСЕЛЬ) ==================== -->
+<section class="games-carousel-section" data-fade>
+  <div class="carousel-header">
+    <div class="carousel-title-group">
+      <h2 class="section-title">ИГРЫ В КАТАЛОГЕ</h2>
+      <span class="carousel-subtitle">Тяни ленту мышью или листай стрелками</span>
+    </div>
+    <div class="carousel-nav-btns">
+      <button type="button" class="carousel-arrow-btn" id="carouselPrev" aria-label="Предыдущие игры">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
+      <button type="button" class="carousel-arrow-btn" id="carouselNext" aria-label="Следующие игры">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- DRAG-TO-SCROLL TRACK -->
+  <div class="skew-carousel-viewport" id="skewViewport">
+    <div class="skew-carousel-track" id="skewTrack">
+      <% displayGames.forEach(function(g, i) { 
+           var slug = gameSlugs[g.game_title] || 'game';
+           var onlineCover = gameOnlineCovers[g.game_title] || '';
+      %>
+        <div class="skew-card" 
+             data-game="<%= g.game_title %>" 
+             data-slug="<%= slug %>"
+             data-mods="<%= g.mods_count %>"
+             tabindex="0"
+             role="button"
+             aria-haspopup="dialog"
+             aria-label="Открыть подкатегории для <%= g.game_title %>">
+          
+          <div class="skew-card-inner">
+            <!-- Фоновое изображение игры с цепочкой фоллбэков -->
+            <img src="/images/games/<%= slug %>.jpg" 
+                 alt="<%= g.game_title %>" 
+                 class="skew-card-img" 
+                 loading="lazy"
+                 onerror="this.onerror=null; this.src='<%= onlineCover %>'; this.onerror=function(){ this.style.display='none'; };">
+
+            <div class="skew-card-gradient"></div>
+
+            <div class="skew-card-badges">
+              <% if (i === 0) { %><span class="badge badge-hot">#1 HOT</span><% } %>
+              <% if (i < 3 && i !== 0) { %><span class="badge badge-top">TOP</span><% } %>
+            </div>
+
+            <div class="skew-card-footer">
+              <h3 class="skew-card-title"><%= g.game_title %></h3>
+              <div class="skew-card-meta">
+                <span class="skew-card-count">📦 <%= g.mods_count %> модов</span>
+                <div class="skew-card-tags">
+                  <svg class="skew-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" title="PC Game">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                  </svg>
+                  <svg class="skew-tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" title="Mods Supported">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    <% }); %>
+      <% }); %>
+    </div>
   </div>
 </section>
 
-<!-- POPULAR MODS -->
+<!-- ==================== 3. ПОПОВЕР ПОДКАТЕГОРИЙ (ПОЗИЦИОНИРУЕТСЯ СПРАВА/СЛЕВА ОТ ИГРЫ) ==================== -->
+<div class="game-popover" id="gamePopover" role="dialog" aria-modal="false" aria-hidden="true">
+  <div class="game-popover-header">
+    <h4 class="game-popover-title" id="popoverTitle">Игра</h4>
+    <button type="button" class="game-popover-close" id="popoverClose" aria-label="Закрыть меню">✕</button>
+  </div>
+  <div class="game-popover-body">
+    <a href="/catalog" class="game-popover-all" id="popoverAllMods">
+      <span>Все моды игры</span>
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+
+    <!-- Список подкатегорий с РЕАЛЬНЫМИ slugs из views/catalog.ejs -->
+    <div class="game-popover-list" id="popoverCatList">
+      <a href="/catalog?category=graphics" class="game-popover-cat" data-slug="graphics">
+        <span class="popover-cat-icon">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+        </span>
+        <span>Графика и текстуры</span>
+      </a>
+
+      <a href="/catalog?category=gameplay" class="game-popover-cat" data-slug="gameplay">
+        <span class="popover-cat-icon">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </span>
+        <span>Геймплей и механики</span>
+      </a>
+
+      <a href="/catalog?category=ui-hud" class="game-popover-cat" data-slug="ui-hud">
+        <span class="popover-cat-icon">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </span>
+        <span>Интерфейс (HUD)</span>
+      </a>
+
+      <a href="/catalog?category=optimization" class="game-popover-cat" data-slug="optimization">
+        <span class="popover-cat-icon">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </span>
+        <span>Оптимизация и фиксы</span>
+      </a>
+
+      <a href="/catalog?category=quests" class="game-popover-cat" data-slug="quests">
+        <span class="popover-cat-icon">
+          <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </span>
+        <span>Квесты и локации</span>
+      </a>
+    </div>
+
+    <a href="/catalog?nsfw=1" class="game-popover-nsfw" id="popoverNsfwLink">
+      <span>18+ Контент игры</span>
+      <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M8.5 8.5v7"></path>
+        <path d="M15.5 8.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5z"></path>
+        <path d="M11 12h3"></path>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<!-- ==================== 4. ПОПУЛЯРНЫЕ МОДИФИКАЦИИ ==================== -->
 <% if (typeof popularMods !== 'undefined' && popularMods && popularMods.length > 0) { %>
-<section style="padding: 0 0 60px;" data-fade>
-  <h2 class="section-title">🔥 Популярные модификации</h2>
+<section style="padding: 20px 0 60px;" data-fade>
+  <h2 class="section-title">ПОПУЛЯРНЫЕ МОДИФИКАЦИИ</h2>
   <p class="section-subtitle">Самые скачиваемые моды прямо сейчас</p>
 
   <div class="mods-carousel">
