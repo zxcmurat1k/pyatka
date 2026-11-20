@@ -81,7 +81,7 @@ app.get('/catalog', (req, res) => {
     if (req.query.nsfw === '1') { query += ` AND mods.is_nsfw = 1`; }
     else if (req.query.nsfw === '0') { query += ` AND mods.is_nsfw = 0`; }
 
-    const sortMap = { 'downloads': 'downloads_count DESC', 'size': 'file_size_mb ASC', 'newest': 'created_at DESC' };
+    const sortMap = { 'popular': 'downloads_count DESC', 'downloads': 'downloads_count DESC', 'size': 'file_size_mb ASC', 'newest': 'created_at DESC' };
     query += ` ORDER BY ${sortMap[req.query.sort] || 'downloads_count DESC'}`;
 
     const mods = db.prepare(query).all(...params);
@@ -92,7 +92,7 @@ app.get('/catalog', (req, res) => {
 app.get('/mods/:id', (req, res) => {
     const mod = db.prepare(`SELECT mods.*, categories.name as cat_name, categories.slug as cat_slug FROM mods LEFT JOIN categories ON mods.category_id = categories.id WHERE mods.id = ?`).get(req.params.id);
     if (!mod) return res.status(404).render('error', { msg: 'Mod not found' });
-    const reviews = db.prepare(`SELECT reviews.*, users.name FROM reviews JOIN users ON reviews.user_id = users.id WHERE mod_id = ? AND is_approved = 1`).all(mod.id);
+    const reviews = db.prepare(`SELECT reviews.*, users.name AS user_name FROM reviews JOIN users ON reviews.user_id = users.id WHERE mod_id = ? AND is_approved = 1`).all(mod.id);
     const relatedMods = db.prepare(`SELECT * FROM mods WHERE game_title = ? AND id != ? LIMIT 3`).all(mod.game_title, mod.id);
     res.render('mod_details', { mod, reviews, relatedMods });
 });
