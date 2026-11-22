@@ -1123,7 +1123,7 @@ html[data-mode="nsfw"] .badge-game {
   background-size: cover;
   background-position: 65% center;
   background-repeat: no-repeat;
-  background-image: linear-gradient(135deg, rgba(16, 22, 38, 0.95), rgba(11, 12, 16, 0.98)), url('/images/hero-sfw.jpg');
+  background-image: linear-gradient(90deg, rgba(11, 12, 16, 0.92) 0%, rgba(11, 12, 16, 0.50) 50%, rgba(11, 12, 16, 0.12) 100%), url('/images/hero-sfw.jpg');
   transition: background-image 0.5s ease;
   overflow: hidden;
   padding: 60px 0;
@@ -1132,7 +1132,7 @@ html[data-mode="nsfw"] .badge-game {
 }
 
 html[data-mode="nsfw"] .portal-hero {
-  background-image: linear-gradient(135deg, rgba(38, 13, 25, 0.95), rgba(13, 8, 12, 0.98)), url('/images/hero-nsfw.jpg');
+  background-image: linear-gradient(90deg, rgba(13, 8, 12, 0.92) 0%, rgba(13, 8, 12, 0.50) 50%, rgba(13, 8, 12, 0.12) 100%), url('/images/hero-nsfw.jpg');
 }
 
 .portal-hero-scrim {
