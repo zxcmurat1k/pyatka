@@ -1289,7 +1289,7 @@ html[data-mode="nsfw"] .portal-hero-badge {
   width: 100%;
   overflow: hidden;
   position: relative;
-  padding: 16px 8px 24px 8px;
+  padding: 8px 0 16px 0;
 }
 .skew-carousel-track {
   display: flex;
@@ -1300,7 +1300,7 @@ html[data-mode="nsfw"] .portal-hero-badge {
   -ms-overflow-style: none;
   cursor: grab;
   user-select: none;
-  padding-bottom: 8px;
+  padding: 14px 28px 18px 28px;
 }
 .skew-carousel-track::-webkit-scrollbar {
   display: none;
@@ -2406,4 +2406,66 @@ html[data-mode="sfw"] .nsfw-media:not(.unblurred-temp) .media-badge-right {
   .portal-hero {
     max-height: 920px;
   }
+}
+
+
+/* === FIX BUG-010 / BUG-012 / BUG-021: LIGHT THEME CONTRAST & 18+ DARK LOCK === */
+/* Плашки на обложках и текст на тёмном Hero всегда остаются светлыми и читаемыми */
+.media-badge-left {
+  color: #F8FAFC !important;
+  background: rgba(11, 12, 16, 0.86) !important;
+}
+.media-badge-size {
+  color: #E2E8F0 !important;
+  background: rgba(11, 12, 16, 0.86) !important;
+}
+.portal-hero-title {
+  color: #F8FAFC !important;
+}
+.portal-hero-desc {
+  color: #E2E8F0 !important;
+}
+html[data-theme="light"] .portal-hero .btn-outline,
+html[data-theme="light"] a.btn-outline.btn-pill {
+  background: rgba(15, 23, 42, 0.72) !important;
+  color: #F8FAFC !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+html[data-theme="light"] .portal-hero .btn-outline:hover {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #7DD3FC !important;
+  border-color: #38BDF8 !important;
+}
+
+/* Углубляем акценты в светлой теме для высокой читаемости заголовков и бейджей */
+html[data-theme="light"][data-mode="sfw"] {
+  --accent-primary:       #0284C7;
+  --accent-primary-hover: #0369A1;
+  --accent-secondary:     #4F46E5;
+  --btn-primary-text:     #FFFFFF;
+  --success:              #059669;
+  --danger:               #DC2626;
+}
+
+/* Жёсткая фиксация тёмной палитры в режиме 18+ даже при data-theme="light" */
+html[data-mode="nsfw"] {
+  --bg-main:              #0D080C !important;
+  --bg-surface:           #191017 !important;
+  --bg-elevated:          #241621 !important;
+  --border-subtle:        rgba(244, 63, 94, 0.24) !important;
+  --accent-primary:       #F43F5E !important;
+  --accent-primary-hover: #FB7185 !important;
+  --accent-secondary:     #F59E0B !important;
+  --text-main:            #FFF1F2 !important;
+  --text-muted:           #C4A5B0 !important;
+  --text-dim:             #8B6874 !important;
+  --btn-primary-text:     #FFFFFF !important;
+  --sidebar-bg:           rgba(18, 11, 16, 0.96) !important;
+  --header-bg:            rgba(13, 8, 12, 0.95) !important;
+  --footer-bg:            #080407 !important;
+}
+.sidebar-theme-toggle:disabled {
+  opacity: 0.42;
+  cursor: not-allowed !important;
+  pointer-events: auto;
 }

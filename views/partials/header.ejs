@@ -25,7 +25,7 @@
           mode = params.get('nsfw') === '1' ? 'nsfw' : 'sfw';
         }
         document.documentElement.setAttribute('data-mode', mode);
-        var theme = localStorage.getItem('hornyho_theme') || 'dark';
+        var theme = mode === 'nsfw' ? 'dark' : (localStorage.getItem('hornyho_theme') || 'dark');
         document.documentElement.setAttribute('data-theme', theme);
         if (sessionStorage.getItem('hornyho_sidebar_hover') === '1') {
           document.documentElement.classList.add('sidebar-pinned-open', 'sidebar-no-trans');

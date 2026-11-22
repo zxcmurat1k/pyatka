@@ -26,6 +26,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Lock dark theme when 18+ mode is active (BUG-021)
+    const tBtn = document.getElementById("themeModeToggle");
+    const tLbl = document.getElementById("themeToggleLabel");
+    if (mode === "nsfw") {
+      document.documentElement.setAttribute("data-theme", "dark");
+      if (tBtn) {
+        tBtn.disabled = true;
+        tBtn.title = "В режиме 18+ зафиксирована тёмная тема";
+      }
+      if (tLbl) tLbl.textContent = "Тёмная (18+)";
+    } else {
+      const savedTheme = localStorage.getItem("hornyho_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      if (tBtn) {
+        tBtn.disabled = false;
+        tBtn.title = "";
+      }
+      if (tLbl) tLbl.textContent = savedTheme === "light" ? "Тёмная тема" : "Светлая тема";
+    }
+
     // Update toggle switch indicator UI
     const toggleBtns = document.querySelectorAll('.sidebar-nsfw-toggle, #nsfwModeToggle');
     toggleBtns.forEach(btn => {
@@ -624,6 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (themeBtn) {
     themeBtn.addEventListener("click", (e) => {
       e.preventDefault();
+      if (document.documentElement.getAttribute("data-mode") === "nsfw") return;
       const cur = document.documentElement.getAttribute("data-theme") || "dark";
       const next = cur === "light" ? "dark" : "light";
       document.documentElement.setAttribute("data-theme", next);
