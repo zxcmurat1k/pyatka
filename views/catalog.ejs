@@ -102,9 +102,8 @@
       <!-- NSFW toggle -->
       <div class="filter-section">
         <label class="toggle-wrap">
-          <input type="checkbox" name="nsfw" value="1" class="toggle-input" 
-                 <%= isNsfwFilter ? 'checked' : '' %>
-                 onchange="this.form.submit()">
+          <input type="checkbox" name="nsfw" value="1" id="catalogNsfwCheckbox" class="toggle-input" 
+                 <%= isNsfwFilter ? 'checked' : '' %>>
           <span class="toggle-slider"></span>
           <span style="font-size:14px; font-weight:600;">18+ контент</span>
         </label>

@@ -14,6 +14,7 @@
   var gameSlugs = {
     'Deadlock': 'deadlock',
     'Minecraft': 'minecraft',
+    'The Elder Scrolls V: Skyrim': 'skyrim',
     'The Elder Scrolls V: Skyrim SE': 'skyrim',
     'Cyberpunk 2077': 'cyberpunk-2077',
     'Terraria': 'terraria'
@@ -21,10 +22,17 @@
 
   var gameOnlineCovers = {
     'Deadlock': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1422450/header.jpg',
-    'Minecraft': 'https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/MC-EDU_Game-Image_Standard.jpg',
+    'Minecraft': '/images/games/minecraft.jpg',
+    'The Elder Scrolls V: Skyrim': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/489830/header.jpg',
     'The Elder Scrolls V: Skyrim SE': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/489830/header.jpg',
     'Cyberpunk 2077': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg',
-    'Terraria': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/105600/header.jpg'
+    'Terraria': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/105600/header.jpg',
+    'The Witcher 3: Wild Hunt': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/292030/header.jpg',
+    'Baldur\'s Gate 3': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1086940/header.jpg',
+    'Cities: Skylines': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/255710/header.jpg',
+    'Grand Theft Auto V': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/271590/header.jpg',
+    'S.T.A.L.K.E.R.: Call of Pripyat': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/41700/header.jpg',
+    'Stardew Valley': 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/413150/header.jpg'
   };
 %>
 
@@ -233,7 +241,7 @@
   <h2 class="section-title">ПОПУЛЯРНЫЕ МОДИФИКАЦИИ</h2>
   <p class="section-subtitle">Самые скачиваемые моды прямо сейчас</p>
 
-  <div class="mods-carousel">
+  <div class="catalog-grid" style="margin-top:20px;">
     <% popularMods.forEach(function(mod) { %>
       <div class="card mod-card">
         <div class="mod-card-media<%= mod.is_nsfw ? ' nsfw-media' : '' %>">
@@ -250,12 +258,12 @@
             <% } %>
           </a>
 
-          <span class="mod-card-game-overlay"><%= mod.game_title %></span>
+          <span class="media-badge-left"><%= mod.game_title %></span>
           <% if (mod.is_nsfw) { %>
-            <span class="mod-card-badge-nsfw">18+</span>
+            <span class="media-badge-right">18+</span>
           <% } %>
           <% if (mod.file_size_mb) { %>
-            <span class="mod-card-size"><%= mod.file_size_mb %> МБ</span>
+            <span class="media-badge-size"><%= mod.file_size_mb %> МБ</span>
           <% } %>
 
           <% if (mod.is_nsfw) { %>

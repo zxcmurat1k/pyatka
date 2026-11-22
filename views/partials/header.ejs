@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-mode="sfw">
+<html lang="ru" data-mode="sfw" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +25,11 @@
           mode = params.get('nsfw') === '1' ? 'nsfw' : 'sfw';
         }
         document.documentElement.setAttribute('data-mode', mode);
+        var theme = localStorage.getItem('hornyho_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        if (sessionStorage.getItem('hornyho_sidebar_hover') === '1') {
+          document.documentElement.classList.add('sidebar-pinned-open', 'sidebar-no-trans');
+        }
       } catch (e) {}
     })();
   </script>
@@ -138,6 +143,24 @@
 
       <!-- BOTTOM SECTION (PINNED VIA margin-top: auto) -->
       <div class="sidebar-footer">
+        <!-- LIGHT/DARK THEME TOGGLER (BUG-012) -->
+        <button type="button" class="sidebar-nav-link sidebar-theme-toggle" id="themeModeToggle" aria-label="Переключить светлую и тёмную тему" style="border:none; background:transparent; width:100%; cursor:pointer; text-align:left;">
+          <span class="sidebar-link-icon">
+            <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </span>
+          <span class="sidebar-link-text" id="themeToggleLabel">Светлая тема</span>
+        </button>
+
         <!-- 18+ MODE TOGGLER -->
         <button type="button" class="sidebar-nsfw-toggle" id="nsfwModeToggle" aria-label="Переключить режим 18+">
           <span class="sidebar-link-icon">
