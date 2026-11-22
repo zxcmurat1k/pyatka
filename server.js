@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
@@ -9,10 +11,37 @@ const db = require('./db/database');
 const { sendCodeEmail } = require('./utils/mailer');
 
 const app = express();
+app.set('trust proxy', 1);
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
+
+const globalLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Слишком много запросов. Подождите минуту и попробуйте снова.'
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 15,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Слишком много попыток. Повторите через 15 минут.'
+});
+
+app.use(globalLimiter);
+app.use(['/login', '/register', '/register/verify', '/forgot-password', '/forgot-password/verify', '/contacts'], (req, res, next) => {
+    if (req.method === 'POST') return authLimiter(req, res, next);
+    next();
+});
 
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use('/images', express.static(path.join(__dirname, 'public/images'), { maxAge: '7d', etag: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), { maxAge: '7d', etag: true }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h', etag: true }));
