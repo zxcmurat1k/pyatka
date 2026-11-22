@@ -107,11 +107,11 @@ app.post('/mods/:id/reviews', requireAuth, (req, res) => {
 });
 
 app.route('/contacts')
-    .get((req, res) => res.render('contacts'))
+    .get((req, res) => res.render('contacts', { sent: req.query.sent === '1' }))
     .post((req, res) => {
         db.prepare(`INSERT INTO feedback (name, email, subject, message, status) VALUES (?, ?, ?, ?, 'new')`)
           .run(req.body.name, req.body.email, req.body.subject, req.body.message);
-        res.redirect('/?msg=FeedbackSent');
+        res.redirect('/contacts?sent=1');
     });
 
 // --- AUTH & PROFILE ---

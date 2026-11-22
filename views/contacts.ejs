@@ -3,6 +3,12 @@
 <h1 class="page-title">Контакты</h1>
 <p class="page-subtitle">Свяжитесь с нами — мы всегда на связи</p>
 
+<% if (typeof sent !== "undefined" && sent) { %>
+  <div style="max-width:1000px; margin:0 auto 24px; padding:14px 20px; border-radius:var(--radius-sm); background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.35); color:var(--success); font-weight:500;">
+    Сообщение успешно отправлено! Мы ответим вам в ближайшее время.
+  </div>
+<% } %>
+
 <div class="contacts-layout">
   <!-- Contact Info -->
   <div class="contacts-info" data-fade>
