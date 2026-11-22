@@ -147,6 +147,8 @@ app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/'));
 
 app.get('/profile', requireAuth, (req, res) => {
     const modpacks = db.prepare(`SELECT * FROM modpacks WHERE user_id = ? ORDER BY created_at DESC`).all(req.session.user.id);
+    const getItems = db.prepare(`SELECT m.id, m.title, m.game_title, m.file_size_mb, mi.load_order FROM modpack_items mi JOIN mods m ON mi.mod_id = m.id WHERE mi.modpack_id = ? ORDER BY mi.load_order ASC`);
+    modpacks.forEach(p => { p.items = getItems.all(p.id); });
     const favorites = db.prepare(`SELECT mods.* FROM favorites JOIN mods ON favorites.mod_id = mods.id WHERE favorites.user_id = ?`).all(req.session.user.id);
     res.render('profile', { modpacks, favorites });
 });

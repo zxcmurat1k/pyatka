@@ -63,6 +63,16 @@
                 <% if (pack.total_size_mb) { %>&bull; <span><%= pack.total_size_mb %> МБ</span><% } %>
                 <% if (pack.created_at) { %>&bull; <span><%= pack.created_at %></span><% } %>
               </div>
+              <% if (Array.isArray(pack.items) && pack.items.length > 0) { %>
+                <details style="margin-top:10px;">
+                  <summary style="cursor:pointer; color:var(--accent-primary); font-size:13px; font-weight:600;">Состав сборки (<%= pack.items.length %>)</summary>
+                  <ul style="margin-top:8px; padding-left:16px; list-style:disc; font-size:13px; color:var(--text-muted);">
+                    <% pack.items.forEach(function(item) { %>
+                      <li style="margin-bottom:4px;"><a href="/mods/<%= item.id %>"><%= item.title %></a> — <%= item.game_title %> (<%= item.file_size_mb %> МБ)</li>
+                    <% }); %>
+                  </ul>
+                </details>
+              <% } %>
             </div>
             <span class="badge <%= pack.status === 'completed' ? 'badge-new' : (pack.status === 'cancelled' ? 'badge-hot' : 'badge-top') %>">
               <%= pack.status === 'new' ? 'Новая' : (pack.status === 'in_progress' ? 'В работе' : (pack.status === 'completed' ? 'Готова' : 'Отменена')) %>
