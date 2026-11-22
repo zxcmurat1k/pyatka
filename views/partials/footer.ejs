@@ -44,6 +44,43 @@
     </div>
   </div>
 
+    <!-- TOP PROGRESS BAR -->
+  <div class="net-progress-bar" id="netProgressBar" aria-hidden="true"></div>
+
+  <!-- OFFLINE / ONLINE STATUS BANNER -->
+  <div class="net-offline-banner" id="netOfflineBanner" role="status" aria-live="polite" hidden>
+    <div class="net-offline-inner">
+      <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+      <span id="netOfflineText">Нет подключения к сети. Страницы и изображения могут не загружаться.</span>
+      <button type="button" class="btn btn-sm btn-secondary" onclick="window.location.reload()">Обновить</button>
+    </div>
+  </div>
+
+  <!-- SLOW-NETWORK PER-TAB SKELETON OVERLAY -->
+  <div class="page-skeleton-overlay" id="pageSkeletonOverlay" aria-hidden="true">
+    <div class="page-skeleton-shell">
+      <div class="page-skeleton-topbar">
+        <div class="page-skeleton-status">
+          <span class="skel-spinner"></span>
+          <span id="skelStatusLabel">Загружаем раздел...</span>
+        </div>
+        <div class="page-skeleton-actions">
+          <button type="button" class="btn btn-ghost btn-sm" id="skelCancelBtn">Скрыть</button>
+          <button type="button" class="btn btn-primary btn-sm" id="skelRetryBtn">Повторить</button>
+        </div>
+      </div>
+      <div class="page-skeleton-body" id="pageSkeletonBody"></div>
+    </div>
+  </div>
+
   <script src="/js/script.js"></script>
 </body>
 </html>

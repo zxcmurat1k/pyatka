@@ -679,8 +679,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pendingCatalogSubmit) {
         pendingCatalogSubmit = false;
         catNsfwBox.checked = false;
-        if (ageModal) {
-          ageModal.classList.remove("active");
+        const modalEl = document.getElementById("ageModal");
+        if (modalEl) {
+          modalEl.classList.remove("active");
           document.body.style.overflow = "";
         }
         return;
@@ -688,3 +689,277 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof origDeny === "function") origDeny();
     };
   }
+
+
+/* ============ 14. SLOW NETWORK UX: PER-TAB SKELETONS, IMAGE RETRY & OFFLINE BANNER ============ */
+(function initSlowNetworkUX() {
+  const progressBar = document.getElementById("netProgressBar");
+  const skelOverlay = document.getElementById("pageSkeletonOverlay");
+  const skelBody = document.getElementById("pageSkeletonBody");
+  const skelLabel = document.getElementById("skelStatusLabel");
+  const skelCancel = document.getElementById("skelCancelBtn");
+  const skelRetry = document.getElementById("skelRetryBtn");
+  const offlineBanner = document.getElementById("netOfflineBanner");
+  const offlineText = document.getElementById("netOfflineText");
+
+  let navTimer = null;
+  let slowHintTimer = null;
+  let progressTimer = null;
+  let lastTargetUrl = null;
+
+  function getTabSkeleton(pathname) {
+    if (pathname === "/" || pathname === "") {
+      return {
+        label: "Загружаем главную страницу...",
+        html:
+          '<div class="skel-box skel-hero"></div>' +
+          '<div class="skel-box skel-title"></div>' +
+          '<div class="skel-games-row">' +
+            '<div class="skel-box skel-game-card"></div>'.repeat(5) +
+          '</div>'
+      };
+    }
+    if (pathname.startsWith("/catalog")) {
+      return {
+        label: "Загружаем каталог модификаций...",
+        html:
+          '<div class="skel-box skel-title"></div>' +
+          '<div class="skel-box skel-subtitle"></div>' +
+          '<div class="skel-catalog">' +
+            '<div class="skel-box skel-sidebar"></div>' +
+            '<div class="skel-grid">' + '<div class="skel-box skel-mod-card"></div>'.repeat(6) + '</div>' +
+          '</div>'
+      };
+    }
+    if (pathname.startsWith("/mods/")) {
+      return {
+        label: "Загружаем страницу мода...",
+        html:
+          '<div class="skel-box skel-title"></div>' +
+          '<div class="skel-catalog" style="grid-template-columns:1fr 340px;">' +
+            '<div><div class="skel-box skel-hero" style="height:320px;"></div><div class="skel-box skel-row"></div></div>' +
+            '<div class="skel-box skel-sidebar"></div>' +
+          '</div>'
+      };
+    }
+    if (pathname.startsWith("/modpack")) {
+      return {
+        label: "Открываем конструктор сборок...",
+        html:
+          '<div class="skel-box skel-title"></div>' +
+          '<div class="skel-box skel-subtitle"></div>' +
+          '<div class="skel-list">' + '<div class="skel-box skel-row"></div>'.repeat(4) + '</div>'
+      };
+    }
+    if (pathname.startsWith("/profile")) {
+      return {
+        label: "Загружаем личный кабинет...",
+        html:
+          '<div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;">' +
+            '<div class="skel-box" style="width:80px;height:80px;border-radius:50%;"></div>' +
+            '<div style="flex:1;"><div class="skel-box skel-title" style="width:200px;"></div><div class="skel-box" style="height:20px;width:120px;"></div></div>' +
+          '</div>' +
+          '<div class="skel-list">' + '<div class="skel-box skel-row"></div>'.repeat(3) + '</div>'
+      };
+    }
+    if (pathname.startsWith("/admin")) {
+      return {
+        label: "Загружаем панель администратора...",
+        html:
+          '<div class="skel-box skel-title"></div>' +
+          '<div class="skel-grid" style="margin-bottom:24px;">' + '<div class="skel-box" style="height:105px;"></div>'.repeat(4) + '</div>' +
+          '<div class="skel-list">' + '<div class="skel-box skel-row"></div>'.repeat(3) + '</div>'
+      };
+    }
+    if (pathname.startsWith("/contacts")) {
+      return {
+        label: "Загружаем контакты...",
+        html:
+          '<div class="skel-box skel-title"></div>' +
+          '<div class="grid-2">' +
+            '<div class="skel-list">' + '<div class="skel-box skel-row"></div>'.repeat(3) + '</div>' +
+            '<div class="skel-box" style="height:360px;"></div>' +
+          '</div>'
+      };
+    }
+    return {
+      label: "Загружаем страницу...",
+      html: '<div class="skel-box skel-auth"></div>'
+    };
+  }
+
+  function startProgress() {
+    if (!progressBar) return;
+    clearInterval(progressTimer);
+    let w = 18;
+    progressBar.style.width = w + "%";
+    progressBar.classList.add("active");
+    progressTimer = setInterval(() => {
+      w = Math.min(88, w + Math.random() * 12);
+      progressBar.style.width = w + "%";
+    }, 300);
+  }
+
+  function resetLoadingUI() {
+    clearTimeout(navTimer);
+    clearTimeout(slowHintTimer);
+    clearInterval(progressTimer);
+    if (progressBar) {
+      progressBar.classList.remove("active");
+      progressBar.style.width = "0%";
+    }
+    if (skelOverlay) {
+      skelOverlay.classList.remove("active");
+      skelOverlay.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function scheduleSkeleton(href) {
+    let url;
+    try {
+      url = new URL(href, window.location.origin);
+    } catch (e) {
+      return;
+    }
+    if (url.origin !== window.location.origin) return;
+    if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return;
+
+    lastTargetUrl = url.href;
+    startProgress();
+
+    clearTimeout(navTimer);
+    clearTimeout(slowHintTimer);
+
+    // Показываем индивидуальный скелетон только если загрузка дольше 350 мс (медленный интернет)
+    navTimer = setTimeout(() => {
+      if (!skelOverlay || !skelBody) return;
+      const cfg = getTabSkeleton(url.pathname);
+      skelBody.innerHTML = cfg.html;
+      if (skelLabel) skelLabel.textContent = cfg.label;
+      skelOverlay.classList.add("active");
+      skelOverlay.setAttribute("aria-hidden", "false");
+    }, 350);
+
+    slowHintTimer = setTimeout(() => {
+      if (skelLabel) skelLabel.textContent = "Медленное соединение... всё ещё ждём ответ сервера";
+    }, 4500);
+  }
+
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest("a[href]");
+    if (!link) return;
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (link.target === "_blank" || link.hasAttribute("download")) return;
+    const href = link.getAttribute("href");
+    if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+    scheduleSkeleton(link.href);
+  });
+
+  document.addEventListener("submit", (e) => {
+    if (e.defaultPrevented) return;
+    const form = e.target;
+    if (form && form.action) {
+      scheduleSkeleton(form.action);
+    }
+  });
+
+  if (skelCancel) {
+    skelCancel.addEventListener("click", resetLoadingUI);
+  }
+  if (skelRetry) {
+    skelRetry.addEventListener("click", () => {
+      if (lastTargetUrl) window.location.href = lastTargetUrl;
+      else window.location.reload();
+    });
+  }
+  window.addEventListener("pageshow", resetLoadingUI);
+
+  // --- Offline / Online Banner ---
+  function updateNetworkBanner(isOnline) {
+    if (!offlineBanner || !offlineText) return;
+    if (!isOnline) {
+      offlineBanner.hidden = false;
+      offlineBanner.classList.remove("is-online");
+      offlineText.textContent = "Нет подключения к интернету. Картинки и новые вкладки временно недоступны.";
+    } else if (!offlineBanner.hidden) {
+      offlineBanner.classList.add("is-online");
+      offlineText.textContent = "Соединение восстановлено!";
+      setTimeout(() => {
+        offlineBanner.hidden = true;
+        offlineBanner.classList.remove("is-online");
+      }, 2800);
+    }
+  }
+  window.addEventListener("offline", () => updateNetworkBanner(false));
+  window.addEventListener("online", () => updateNetworkBanner(true));
+  if (navigator.onLine === false) updateNetworkBanner(false);
+
+  // --- Smart Image Shimmer & Broken Image Fallback with Retry ---
+  function attachImageFallback(img) {
+    if (!img || img.classList.contains("sidebar-logo-img") || img.dataset.fbAttached === "1") return;
+    img.dataset.fbAttached = "1";
+    const origSrc = img.getAttribute("src");
+    const box = img.closest(".mod-card-media") || img.closest(".skew-card-inner");
+    const shimmerHost = img.closest(".mod-card-media") || img.closest(".skew-card");
+    if (!box || !origSrc) return;
+
+    function clearFallback() {
+      if (shimmerHost) shimmerHost.classList.remove("img-loading");
+      const oldFb = box.querySelector(".img-fallback-card");
+      if (oldFb) oldFb.remove();
+      img.style.display = "";
+    }
+
+    function showFallback() {
+      if (shimmerHost) shimmerHost.classList.remove("img-loading");
+      img.style.display = "none";
+      if (box.querySelector(".img-fallback-card")) return;
+
+      const fb = document.createElement("div");
+      fb.className = "img-fallback-card";
+      fb.innerHTML =
+        '<svg class="ui-icon" style="width:28px;height:28px;opacity:0.75;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">' +
+          '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>' +
+          '<circle cx="8.5" cy="8.5" r="1.5"></circle>' +
+          '<polyline points="21 15 16 10 5 21"></polyline>' +
+        '</svg>' +
+        '<div class="img-fallback-title"></div>' +
+        '<button type="button" class="img-fallback-retry">Повторить</button>';
+
+      fb.querySelector(".img-fallback-title").textContent = img.alt || "Изображение не загрузилось";
+      fb.querySelector(".img-fallback-retry").addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        fb.remove();
+        if (shimmerHost) shimmerHost.classList.add("img-loading");
+        img.style.display = "";
+        const sep = origSrc.includes("?") ? "&" : "?";
+        img.src = origSrc + sep + "retry=" + Date.now();
+      });
+      box.insertBefore(fb, box.firstChild);
+    }
+
+    if (!img.complete) {
+      if (shimmerHost) shimmerHost.classList.add("img-loading");
+    } else if (img.naturalWidth === 0) {
+      showFallback();
+    }
+
+    img.addEventListener("load", clearFallback);
+    img.addEventListener("error", () => {
+      // Если у skew-card-img есть цепочка onlineCover, даём ей отработать один раз
+      if (img.classList.contains("skew-card-img") && !img.dataset.triedFallback) {
+        img.dataset.triedFallback = "1";
+        setTimeout(() => {
+          if (img.style.display === "none" || (img.complete && img.naturalWidth === 0)) {
+            showFallback();
+          }
+        }, 400);
+        return;
+      }
+      showFallback();
+    });
+  }
+
+  document.querySelectorAll("img.card-img, img.skew-card-img").forEach(attachImageFallback);
+})();

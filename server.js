@@ -13,7 +13,9 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'public/images'), { maxAge: '7d', etag: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), { maxAge: '7d', etag: true }));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1h', etag: true }));
 
 app.use(session({
     secret: 'HornyHo_Secret_Key_2026',
