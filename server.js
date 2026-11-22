@@ -197,9 +197,15 @@ app.post('/modpack/checkout', requireAuth, (req, res) => {
 
 // --- ADMIN PANEL ---
 app.get('/admin', requireAdmin, (req, res) => {
-    const stats = { users: db.prepare(`SELECT COUNT(*) as c FROM users`).get().c, mods: db.prepare(`SELECT COUNT(*) as c FROM mods`).get().c };
+    const stats = {
+        users: db.prepare(`SELECT COUNT(*) as c FROM users`).get().c,
+        mods: db.prepare(`SELECT COUNT(*) as c FROM mods`).get().c,
+        modpacks: db.prepare(`SELECT COUNT(*) as c FROM modpacks`).get().c,
+        reviews: db.prepare(`SELECT COUNT(*) as c FROM reviews`).get().c
+    };
     const pendingReviews = db.prepare(`SELECT * FROM reviews WHERE is_approved = 0`).all();
-    res.render('admin/dashboard', { stats, pendingReviews });
+    const allMods = db.prepare(`SELECT m.*, c.name AS cat_name FROM mods m LEFT JOIN categories c ON m.category_id = c.id ORDER BY m.id DESC`).all();
+    res.render('admin/dashboard', { stats, pendingReviews, allMods });
 });
 
 app.post('/admin/mods', requireAdmin, upload.single('cover'), checkCsrf, (req, res) => {
@@ -221,7 +227,13 @@ app.post('/admin/mods', requireAdmin, upload.single('cover'), checkCsrf, (req, r
 });
 
 app.post('/admin/mods/delete/:id', requireAdmin, (req, res) => {
-    db.prepare(`DELETE FROM mods WHERE id = ?`).run(req.params.id);
+    const deleteTx = db.transaction((modId) => {
+        db.prepare(`DELETE FROM modpack_items WHERE mod_id = ?`).run(modId);
+        db.prepare(`DELETE FROM reviews WHERE mod_id = ?`).run(modId);
+        db.prepare(`DELETE FROM favorites WHERE mod_id = ?`).run(modId);
+        db.prepare(`DELETE FROM mods WHERE id = ?`).run(modId);
+    });
+    deleteTx(req.params.id);
     res.redirect('/admin');
 });
 

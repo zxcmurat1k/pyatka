@@ -178,4 +178,30 @@
   </div>
 </section>
 
+<!-- Manage Mods List (BUG-007) -->
+<% if (typeof allMods !== "undefined" && allMods && allMods.length > 0) { %>
+<section data-fade style="margin-top:40px;">
+  <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">Управление модами (<%= allMods.length %>)</h2>
+  <div class="builder-list">
+    <% allMods.forEach(function(m) { %>
+      <div class="builder-item">
+        <div class="builder-item-info">
+          <div class="builder-item-title">
+            <a href="/mods/<%= m.id %>" style="color:var(--text-main);"><%= m.title %></a>
+            <% if (m.is_nsfw) { %><span class="badge badge-nsfw" style="margin-left:6px;">18+</span><% } %>
+          </div>
+          <div class="builder-item-meta">
+            ID: <%= m.id %> &bull; <%= m.game_title %> &bull; <%= m.cat_name || "" %> &bull; <%= m.file_size_mb %> МБ
+          </div>
+        </div>
+        <form action="/admin/mods/delete/<%= m.id %>" method="POST" onsubmit="return confirm('Удалить мод «<%= m.title %>»?');">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+        </form>
+      </div>
+    <% }); %>
+  </div>
+</section>
+<% } %>
+
 <%- include('../partials/footer') %>
