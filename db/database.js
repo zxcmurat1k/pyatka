@@ -23,4 +23,17 @@ if (!checkAdmin) {
       .run('Admin', 'admin@modforge.local', '+00000000000', hash);
 }
 
+db.exec(`
+CREATE TABLE IF NOT EXISTS email_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    purpose TEXT NOT NULL CHECK(purpose IN ('register', 'reset')),
+    code TEXT NOT NULL,
+    payload TEXT,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    expires_at INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+);
+`);
+
 module.exports = db;

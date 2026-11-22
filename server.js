@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const multer = require('multer');
@@ -5,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const path = require('path');
 const db = require('./db/database');
+const { sendCodeEmail } = require('./utils/mailer');
 
 const app = express();
 
@@ -35,7 +37,7 @@ app.use((req, res, next) => {
         p.startsWith('/contacts') ? 'contacts' :
         p.startsWith('/admin') ? 'admin' :
         p.startsWith('/profile') ? 'profile' :
-        p.startsWith('/login') ? 'login' : '';
+        (p.startsWith('/login') || p.startsWith('/register') || p.startsWith('/forgot-password')) ? 'login' : '';
     next();
 });
 
@@ -130,33 +132,196 @@ app.route('/contacts')
     });
 
 // --- AUTH & PROFILE ---
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_COOLDOWN_MS = 60 * 1000;
+const generateOtpCode = () => String(crypto.randomInt(100000, 1000000));
+
 app.route('/login')
-    .get((req, res) => res.render('login'))
+    .get((req, res) => {
+        const msgMap = {
+            Registered: 'Аккаунт успешно создан и подтверждён! Теперь войдите в систему.',
+            ResetSent: 'Пароль успешно обновлён! Войдите с новым паролем.'
+        };
+        res.render('login', { successMsg: msgMap[req.query.msg] || null });
+    })
     .post((req, res) => {
-        const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(req.body.email);
-        if (user && bcrypt.compareSync(req.body.password, user.password_hash)) {
+        const email = (req.body.email || '').trim().toLowerCase();
+        const user = db.prepare(`SELECT * FROM users WHERE LOWER(email) = ?`).get(email);
+        if (user && bcrypt.compareSync(req.body.password || '', user.password_hash)) {
             if (user.is_blocked) return res.status(403).send('Account blocked');
             req.session.user = { id: user.id, name: user.name, role: user.role };
             return req.session.save(() => res.redirect('/'));
         }
-        res.render('login', { error: 'Invalid credentials' });
+        res.render('login', { error: 'Неверный email или пароль' });
     });
 
 app.route('/register')
-    .get((req, res) => res.render('generic', { title: 'Register' }))
-    .post((req, res) => {
-        try {
-            const hash = bcrypt.hashSync(req.body.password, 10);
-            db.prepare(`INSERT INTO users (name, email, phone, password_hash) VALUES (?, ?, ?, ?)`).run(req.body.name, req.body.email, req.body.phone || '+0000000000', hash);
-            res.redirect('/login?msg=Registered');
-        } catch (e) {
-            res.render('generic', { title: 'Register Error: Email already exists' });
+    .get((req, res) => {
+        if (req.session.user) return res.redirect('/profile');
+        res.render('register', { step: 'form', formData: {} });
+    })
+    .post(async (req, res) => {
+        const name = (req.body.name || '').trim();
+        const email = (req.body.email || '').trim().toLowerCase();
+        const phone = (req.body.phone || '').trim() || 'Не указан';
+        const password = req.body.password || '';
+        const confirm = req.body.password_confirm || '';
+        const formData = { name, email, phone: phone === 'Не указан' ? '' : phone };
+
+        if (name.length < 2) {
+            return res.render('register', { step: 'form', formData, error: 'Имя должно содержать минимум 2 символа.' });
         }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.render('register', { step: 'form', formData, error: 'Введите корректный адрес электронной почты.' });
+        }
+        if (password.length < 6) {
+            return res.render('register', { step: 'form', formData, error: 'Пароль должен быть не короче 6 символов.' });
+        }
+        if (password !== confirm) {
+            return res.render('register', { step: 'form', formData, error: 'Пароли не совпадают.' });
+        }
+
+        const existingUser = db.prepare(`SELECT id FROM users WHERE LOWER(email) = ?`).get(email);
+        if (existingUser) {
+            return res.render('register', { step: 'form', formData, error: 'Аккаунт с таким email уже существует.' });
+        }
+
+        const now = Date.now();
+        const prevCode = db.prepare(`SELECT * FROM email_codes WHERE email = ? AND purpose = 'register' ORDER BY id DESC LIMIT 1`).get(email);
+        if (prevCode && (now - prevCode.created_at) < OTP_COOLDOWN_MS) {
+            const waitSec = Math.ceil((OTP_COOLDOWN_MS - (now - prevCode.created_at)) / 1000);
+            return res.render('register', {
+                step: 'verify',
+                formData: { email },
+                info: `Код уже был отправлен ранее. Повторная отправка доступна через ${waitSec} сек.`
+            });
+        }
+
+        const code = generateOtpCode();
+        const payload = JSON.stringify({ name, phone, password_hash: bcrypt.hashSync(password, 10) });
+        db.transaction(() => {
+            db.prepare(`DELETE FROM email_codes WHERE email = ? AND purpose = 'register'`).run(email);
+            db.prepare(`INSERT INTO email_codes (email, purpose, code, payload, attempts, expires_at, created_at) VALUES (?, 'register', ?, ?, 0, ?, ?)`)
+              .run(email, code, payload, now + OTP_TTL_MS, now);
+        })();
+
+        const mailRes = await sendCodeEmail(email, code, 'register');
+        const info = mailRes.mode === 'smtp'
+            ? 'Письмо с 6-значным кодом отправлено на вашу почту.'
+            : (mailRes.mode === 'fallback'
+                ? 'SMTP временно недоступен — код записан в лог сервера.'
+                : 'Код сформирован (SMTP ещё не подключён).');
+
+        res.render('register', { step: 'verify', formData: { email }, info, devCode: mailRes.devCode });
     });
 
+app.post('/register/verify', (req, res) => {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const code = (req.body.code || '').trim();
+    const record = db.prepare(`SELECT * FROM email_codes WHERE email = ? AND purpose = 'register' ORDER BY id DESC LIMIT 1`).get(email);
+
+    if (!record) {
+        return res.render('register', { step: 'form', formData: { email }, error: 'Сессия подтверждения не найдена. Отправьте форму заново.' });
+    }
+    if (Date.now() > record.expires_at) {
+        db.prepare(`DELETE FROM email_codes WHERE id = ?`).run(record.id);
+        return res.render('register', { step: 'form', formData: { email }, error: 'Срок действия кода истёк (10 минут). Запросите новый код.' });
+    }
+    if (record.attempts >= 5) {
+        db.prepare(`DELETE FROM email_codes WHERE id = ?`).run(record.id);
+        return res.render('register', { step: 'form', formData: { email }, error: 'Превышено число попыток ввода кода. Запросите новый код.' });
+    }
+    if (record.code !== code) {
+        db.prepare(`UPDATE email_codes SET attempts = attempts + 1 WHERE id = ?`).run(record.id);
+        return res.render('register', { step: 'verify', formData: { email }, error: `Неверный код. Осталось попыток: ${4 - record.attempts}.` });
+    }
+
+    try {
+        const data = JSON.parse(record.payload);
+        db.transaction(() => {
+            db.prepare(`INSERT INTO users (name, email, phone, password_hash, role, is_blocked) VALUES (?, ?, ?, ?, 'user', 0)`)
+              .run(data.name, email, data.phone || 'Не указан', data.password_hash);
+            db.prepare(`DELETE FROM email_codes WHERE email = ? AND purpose = 'register'`).run(email);
+        })();
+        res.redirect('/login?msg=Registered');
+    } catch (e) {
+        res.render('register', { step: 'form', formData: { email }, error: 'Не удалось создать аккаунт: возможно, этот email уже занят.' });
+    }
+});
+
 app.route('/forgot-password')
-    .get((req, res) => res.render('generic', { title: 'Forgot Password' }))
-    .post((req, res) => res.redirect('/login?msg=ResetSent'));
+    .get((req, res) => res.render('forgot_password', { step: 'request', email: '' }))
+    .post(async (req, res) => {
+        const email = (req.body.email || '').trim().toLowerCase();
+        const user = db.prepare(`SELECT id, is_blocked FROM users WHERE LOWER(email) = ?`).get(email);
+        if (!user) {
+            return res.render('forgot_password', { step: 'request', email, error: 'Аккаунт с таким email не найден.' });
+        }
+        if (user.is_blocked) {
+            return res.render('forgot_password', { step: 'request', email, error: 'Этот аккаунт заблокирован.' });
+        }
+
+        const now = Date.now();
+        const prevCode = db.prepare(`SELECT * FROM email_codes WHERE email = ? AND purpose = 'reset' ORDER BY id DESC LIMIT 1`).get(email);
+        if (prevCode && (now - prevCode.created_at) < OTP_COOLDOWN_MS) {
+            const waitSec = Math.ceil((OTP_COOLDOWN_MS - (now - prevCode.created_at)) / 1000);
+            return res.render('forgot_password', {
+                step: 'verify',
+                email,
+                info: `Код уже отправлен. Повторная отправка через ${waitSec} сек.`
+            });
+        }
+
+        const code = generateOtpCode();
+        db.transaction(() => {
+            db.prepare(`DELETE FROM email_codes WHERE email = ? AND purpose = 'reset'`).run(email);
+            db.prepare(`INSERT INTO email_codes (email, purpose, code, payload, attempts, expires_at, created_at) VALUES (?, 'reset', ?, NULL, 0, ?, ?)`)
+              .run(email, code, now + OTP_TTL_MS, now);
+        })();
+
+        const mailRes = await sendCodeEmail(email, code, 'reset');
+        const info = mailRes.mode === 'smtp'
+            ? 'Код восстановления отправлен на вашу почту.'
+            : 'Код восстановления сформирован (SMTP ещё не подключён).';
+
+        res.render('forgot_password', { step: 'verify', email, info, devCode: mailRes.devCode });
+    });
+
+app.post('/forgot-password/verify', (req, res) => {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const code = (req.body.code || '').trim();
+    const newPassword = req.body.new_password || '';
+    const confirmPassword = req.body.confirm_password || '';
+
+    if (newPassword.length < 6) {
+        return res.render('forgot_password', { step: 'verify', email, error: 'Новый пароль должен быть не короче 6 символов.' });
+    }
+    if (newPassword !== confirmPassword) {
+        return res.render('forgot_password', { step: 'verify', email, error: 'Пароли не совпадают.' });
+    }
+
+    const record = db.prepare(`SELECT * FROM email_codes WHERE email = ? AND purpose = 'reset' ORDER BY id DESC LIMIT 1`).get(email);
+    if (!record || Date.now() > record.expires_at) {
+        if (record) db.prepare(`DELETE FROM email_codes WHERE id = ?`).run(record.id);
+        return res.render('forgot_password', { step: 'request', email, error: 'Код не найден или истёк. Запросите новый.' });
+    }
+    if (record.attempts >= 5) {
+        db.prepare(`DELETE FROM email_codes WHERE id = ?`).run(record.id);
+        return res.render('forgot_password', { step: 'request', email, error: 'Превышено число попыток. Запросите новый код.' });
+    }
+    if (record.code !== code) {
+        db.prepare(`UPDATE email_codes SET attempts = attempts + 1 WHERE id = ?`).run(record.id);
+        return res.render('forgot_password', { step: 'verify', email, error: `Неверный код. Осталось попыток: ${4 - record.attempts}.` });
+    }
+
+    const hash = bcrypt.hashSync(newPassword, 10);
+    db.transaction(() => {
+        db.prepare(`UPDATE users SET password_hash = ? WHERE LOWER(email) = ?`).run(hash, email);
+        db.prepare(`DELETE FROM email_codes WHERE email = ? AND purpose = 'reset'`).run(email);
+    })();
+
+    res.redirect('/login?msg=ResetSent');
+});
 
 app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/')); });
 

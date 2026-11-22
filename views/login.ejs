@@ -12,6 +12,12 @@
     </h1>
     <p class="auth-subtitle">Войдите, чтобы сохранять сборки и оставлять отзывы</p>
 
+    <% if (typeof successMsg !== 'undefined' && successMsg) { %>
+      <div style="background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.35); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; color:var(--success); font-size:14px;">
+        <%= successMsg %>
+      </div>
+    <% } %>
+
     <% if (typeof error !== 'undefined' && error) { %>
       <div style="background:rgba(255,23,68,0.12); border:1px solid rgba(255,23,68,0.3); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; color:var(--danger); font-size:14px; display:flex; align-items:center; gap:8px;">
         <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
