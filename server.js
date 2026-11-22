@@ -66,7 +66,7 @@ app.get('/', (req, res) => {
         GROUP BY game_title 
         ORDER BY total_downloads DESC
     `).all();
-    const popularMods = db.prepare(`SELECT * FROM mods WHERE is_available = 1 AND is_nsfw = 0 ORDER BY downloads_count DESC LIMIT 6`).all();
+    const popularMods = db.prepare(`SELECT mods.*, categories.name AS cat_name FROM mods LEFT JOIN categories ON mods.category_id = categories.id WHERE is_available = 1 AND is_nsfw = 0 ORDER BY downloads_count DESC LIMIT 6`).all();
     res.render('index', { games, popularMods });
 });
 
@@ -203,7 +203,7 @@ app.get('/admin', requireAdmin, (req, res) => {
 });
 
 app.post('/admin/mods', requireAdmin, upload.single('cover'), checkCsrf, (req, res) => {
-    const imgUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    const imgUrl = req.file ? `/uploads/${req.file.filename}` : (req.body.image_url && req.body.image_url.trim() ? req.body.image_url.trim() : "/images/logo.png");
     db.prepare(`INSERT INTO mods (title, game_title, game_version, category_id, description, install_instructions, source_url, image_url, file_size_mb, is_nsfw, is_available) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`)
       .run(
           req.body.title || 'Untitled',
