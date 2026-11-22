@@ -596,3 +596,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, { passive: true });
 });
+
+
+  /* ============ 13. SIDEBAR HOVER PERSISTENCE, LIGHT THEME & CATALOG 18+ GATE ============ */
+  const sidebarEl = document.getElementById("siteSidebar");
+  if (sidebarEl) {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove("sidebar-no-trans");
+    });
+    sidebarEl.addEventListener("mouseenter", () => {
+      sessionStorage.setItem("hornyho_sidebar_hover", "1");
+      document.documentElement.classList.add("sidebar-pinned-open");
+    });
+    sidebarEl.addEventListener("mouseleave", () => {
+      sessionStorage.setItem("hornyho_sidebar_hover", "0");
+      document.documentElement.classList.remove("sidebar-pinned-open");
+    });
+  }
+
+  // BUG-012: Light / Dark Theme Toggle
+  const themeBtn = document.getElementById("themeModeToggle");
+  const themeLabel = document.getElementById("themeToggleLabel");
+  function syncThemeLabel(t) {
+    if (themeLabel) themeLabel.textContent = t === "light" ? "Тёмная тема" : "Светлая тема";
+  }
+  syncThemeLabel(document.documentElement.getAttribute("data-theme") || "dark");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const cur = document.documentElement.getAttribute("data-theme") || "dark";
+      const next = cur === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("hornyho_theme", next);
+      syncThemeLabel(next);
+    });
+  }
+
+  // BUG-015: Age Gate when activating 18+ filter checkbox in Catalog
+  const catNsfwBox = document.getElementById("catalogNsfwCheckbox");
+  const filterForm = document.getElementById("filterForm");
+  let pendingCatalogSubmit = false;
+  if (catNsfwBox && filterForm) {
+    catNsfwBox.addEventListener("change", () => {
+      if (catNsfwBox.checked && localStorage.getItem("ageVerified") !== "true") {
+        pendingCatalogSubmit = true;
+        if (typeof showAgeGate === "function") showAgeGate();
+        return;
+      }
+      filterForm.submit();
+    });
+    const origConfirm = window.confirmAge;
+    window.confirmAge = function() {
+      if (typeof origConfirm === "function") origConfirm();
+      if (pendingCatalogSubmit) {
+        pendingCatalogSubmit = false;
+        filterForm.submit();
+      }
+    };
+    const origDeny = window.denyAge;
+    window.denyAge = function() {
+      if (pendingCatalogSubmit) {
+        pendingCatalogSubmit = false;
+        catNsfwBox.checked = false;
+        if (ageModal) {
+          ageModal.classList.remove("active");
+          document.body.style.overflow = "";
+        }
+        return;
+      }
+      if (typeof origDeny === "function") origDeny();
+    };
+  }
