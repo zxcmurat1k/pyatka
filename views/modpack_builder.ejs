@@ -37,30 +37,59 @@
               &bull; <span><%= mod.file_size_mb %> МБ</span>
             </div>
           </div>
-          <span class="badge badge-game"><%= mod.game_title %></span>
+          <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+            <span class="badge badge-game"><%= mod.game_title %></span>
+            <form action="/modpack/remove/<%= mod.id %>" method="POST" style="margin:0;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" class="btn btn-danger btn-sm" title="Убрать из сборки">Убрать</button>
+            </form>
+          </div>
         </div>
       <% }); %>
     </div>
 
-    <div class="builder-actions" style="margin-top:28px;">
+    <div class="card" style="padding:28px; margin-top:28px;" data-fade>
+      <h3 style="font-size:1.2rem; margin-bottom:20px;">Параметры сборки</h3>
       <form action="/modpack/checkout" method="POST">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button type="submit" class="btn btn-primary btn-lg btn-pill">
-          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          <span>Сохранить сборку</span>
-        </button>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="target_game_version">Целевая версия игры</label>
+            <input type="text" id="target_game_version" name="target_game_version" class="form-input" placeholder="Например: 1.21.4 или Latest" value="<%= cartMods[0] && cartMods[0].game_version ? cartMods[0].game_version : 'Latest' %>">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="install_method">Способ установки</label>
+            <select id="install_method" name="install_method" class="form-select">
+              <option value="Manual">Вручную (Manual)</option>
+              <option value="Mod Organizer 2">Mod Organizer 2</option>
+              <option value="Vortex">Vortex</option>
+              <option value="Modrinth / CurseForge">Modrinth / CurseForge</option>
+              <option value="tModLoader">tModLoader / Steam Workshop</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="notes">Заметки к сборке (опционально)</label>
+          <textarea id="notes" name="notes" class="form-textarea" style="min-height:84px;" placeholder="Порядок загрузки, конфликты или пометки для себя..."></textarea>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <button type="submit" class="btn btn-primary btn-lg btn-pill">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Сохранить сборку</span>
+          </button>
+          <a href="/catalog" class="btn btn-outline btn-lg btn-pill">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Добавить ещё</span>
+          </a>
+        </div>
       </form>
-      <a href="/catalog" class="btn btn-outline btn-lg btn-pill">
-        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span>Добавить ещё</span>
-      </a>
     </div>
 
   <% } else { %>

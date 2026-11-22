@@ -27,6 +27,15 @@ app.use((req, res, next) => {
     res.locals.cartCount = req.session.cart ? req.session.cart.length : 0;
     res.locals.appName = 'HornyHo';
     res.locals.categories = db.prepare('SELECT * FROM categories').all();
+    const p = req.path;
+    res.locals.currentPage =
+        p === '/' ? 'index' :
+        (p.startsWith('/catalog') || p.startsWith('/mods')) ? 'catalog' :
+        p.startsWith('/modpack') ? 'builder' :
+        p.startsWith('/contacts') ? 'contacts' :
+        p.startsWith('/admin') ? 'admin' :
+        p.startsWith('/profile') ? 'profile' :
+        p.startsWith('/login') ? 'login' : '';
     next();
 });
 
@@ -94,11 +103,17 @@ app.get('/mods/:id', (req, res) => {
     if (!mod) return res.status(404).render('error', { msg: 'Mod not found' });
     const reviews = db.prepare(`SELECT reviews.*, users.name AS user_name FROM reviews JOIN users ON reviews.user_id = users.id WHERE mod_id = ? AND is_approved = 1`).all(mod.id);
     const relatedMods = db.prepare(`SELECT * FROM mods WHERE game_title = ? AND id != ? LIMIT 3`).all(mod.game_title, mod.id);
-    res.render('mod_details', { mod, reviews, relatedMods });
+    const isFavorited = req.session.user
+        ? !!db.prepare('SELECT 1 FROM favorites WHERE user_id = ? AND mod_id = ?').get(req.session.user.id, mod.id)
+        : false;
+    res.render('mod_details', { mod, reviews, relatedMods, isFavorited, reviewSubmitted: req.query.msg === 'ReviewSubmitted' });
 });
 
 app.post('/mods/:id/reviews', requireAuth, (req, res) => {
-    db.prepare(`INSERT INTO reviews (user_id, mod_id, rating, comment) VALUES (?, ?, ?, ?)`).run(req.session.user.id, req.params.id, req.body.rating || 5, req.body.comment);
+    const rating = Math.min(5, Math.max(1, parseInt(req.body.rating, 10) || 5));
+    const comment = (req.body.comment || '').trim();
+    if (!comment) return res.redirect(`/mods/${req.params.id}`);
+    db.prepare(`INSERT INTO reviews (user_id, mod_id, rating, comment) VALUES (?, ?, ?, ?)`).run(req.session.user.id, req.params.id, rating, comment);
     res.redirect(`/mods/${req.params.id}?msg=ReviewSubmitted`);
 });
 
@@ -157,7 +172,7 @@ app.post('/favorites/toggle/:id', requireAuth, (req, res) => {
     const exists = db.prepare(`SELECT 1 FROM favorites WHERE user_id = ? AND mod_id = ?`).get(req.session.user.id, req.params.id);
     if (exists) db.prepare(`DELETE FROM favorites WHERE user_id = ? AND mod_id = ?`).run(req.session.user.id, req.params.id);
     else db.prepare(`INSERT INTO favorites (user_id, mod_id) VALUES (?, ?)`).run(req.session.user.id, req.params.id);
-    res.redirect('back');
+    res.redirect(req.get('Referrer') || `/mods/${req.params.id}`);
 });
 
 // --- MODPACK BUILDER ---
@@ -176,7 +191,7 @@ app.post('/modpack/add/:id', (req, res) => {
 });
 
 app.post('/modpack/remove/:id', (req, res) => {
-    if (req.session.cart) req.session.cart = req.session.cart.filter(id => id !== req.params.id);
+    if (req.session.cart) req.session.cart = req.session.cart.filter(id => String(id) !== String(req.params.id));
     res.redirect('/modpack');
 });
 
@@ -205,9 +220,10 @@ app.get('/admin', requireAdmin, (req, res) => {
         modpacks: db.prepare(`SELECT COUNT(*) as c FROM modpacks`).get().c,
         reviews: db.prepare(`SELECT COUNT(*) as c FROM reviews`).get().c
     };
-    const pendingReviews = db.prepare(`SELECT * FROM reviews WHERE is_approved = 0`).all();
+    const pendingReviews = db.prepare(`SELECT r.*, u.name AS user_name, m.title AS mod_title FROM reviews r LEFT JOIN users u ON r.user_id = u.id LEFT JOIN mods m ON r.mod_id = m.id WHERE r.is_approved = 0 ORDER BY r.created_at DESC`).all();
     const allMods = db.prepare(`SELECT m.*, c.name AS cat_name FROM mods m LEFT JOIN categories c ON m.category_id = c.id ORDER BY m.id DESC`).all();
-    res.render('admin/dashboard', { stats, pendingReviews, allMods });
+    const feedbackList = db.prepare(`SELECT * FROM feedback ORDER BY CASE WHEN status = 'new' THEN 0 ELSE 1 END, created_at DESC`).all();
+    res.render('admin/dashboard', { stats, pendingReviews, allMods, feedbackList });
 });
 
 app.post('/admin/mods', requireAdmin, upload.single('cover'), checkCsrf, (req, res) => {
@@ -246,6 +262,16 @@ app.post('/admin/reviews/:id/approve', requireAdmin, (req, res) => {
 
 app.post('/admin/reviews/:id/delete', requireAdmin, (req, res) => {
     db.prepare(`DELETE FROM reviews WHERE id = ?`).run(req.params.id);
+    res.redirect('/admin');
+});
+
+app.post('/admin/feedback/:id/process', requireAdmin, (req, res) => {
+    db.prepare(`UPDATE feedback SET status = CASE WHEN status = 'new' THEN 'processed' ELSE 'new' END WHERE id = ?`).run(req.params.id);
+    res.redirect('/admin');
+});
+
+app.post('/admin/feedback/:id/delete', requireAdmin, (req, res) => {
+    db.prepare(`DELETE FROM feedback WHERE id = ?`).run(req.params.id);
     res.redirect('/admin');
 });
 

@@ -78,16 +78,19 @@
             <span><%= r.rating %> — <%= r.comment ? r.comment.substring(0, 80) : '' %><%= r.comment && r.comment.length > 80 ? '...' : '' %></span>
           </div>
           <div class="builder-item-meta">
-            Мод ID: <%= r.mod_id %> &bull; Пользователь ID: <%= r.user_id %> &bull; <%= r.created_at || '' %>
+            Мод: <a href="/mods/<%= r.mod_id %>"><%= r.mod_title || ('ID ' + r.mod_id) %></a> &bull; Автор: <%= r.user_name || ('ID ' + r.user_id) %> &bull; <%= r.created_at || '' %>
           </div>
         </div>
-        <span class="badge badge-top">
-          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          Ожидает
-        </span>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <form action="/admin/reviews/<%= r.id %>/approve" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-primary btn-sm">Одобрить</button>
+          </form>
+          <form action="/admin/reviews/<%= r.id %>/delete" method="POST" onsubmit="return confirm('Удалить этот отзыв?');">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+          </form>
+        </div>
       </div>
     <% }); %>
   </div>
@@ -177,6 +180,41 @@
     </form>
   </div>
 </section>
+
+<!-- Feedback Requests -->
+<% if (typeof feedbackList !== 'undefined' && feedbackList && feedbackList.length > 0) { %>
+<section data-fade style="margin-top:40px;">
+  <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">Обращения пользователей (<%= feedbackList.length %>)</h2>
+  <div class="builder-list">
+    <% feedbackList.forEach(function(fb) { %>
+      <div class="builder-item" style="align-items:flex-start;">
+        <div class="builder-item-info">
+          <div class="builder-item-title" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span><%= fb.subject %></span>
+            <span class="badge <%= fb.status === 'processed' ? 'badge-new' : 'badge-top' %>">
+              <%= fb.status === 'processed' ? 'Обработано' : 'Новое' %>
+            </span>
+          </div>
+          <div class="builder-item-meta" style="margin-bottom:6px;">
+            <%= fb.name %> (<%= fb.email %>) &bull; <%= fb.created_at || '' %>
+          </div>
+          <div style="font-size:14px; color:var(--text-muted); line-height:1.5;"><%= fb.message %></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <form action="/admin/feedback/<%= fb.id %>/process" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-secondary btn-sm"><%= fb.status === 'processed' ? 'Вернуть' : 'Обработано' %></button>
+          </form>
+          <form action="/admin/feedback/<%= fb.id %>/delete" method="POST" onsubmit="return confirm('Удалить обращение?');">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+          </form>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</section>
+<% } %>
 
 <!-- Manage Mods List (BUG-007) -->
 <% if (typeof allMods !== "undefined" && allMods && allMods.length > 0) { %>

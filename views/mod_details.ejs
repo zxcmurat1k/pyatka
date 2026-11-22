@@ -127,6 +127,39 @@
         <% } else { %>
           <p style="color:var(--text-muted);">Пока нет отзывов. Будьте первым!</p>
         <% } %>
+
+        <% if (typeof reviewSubmitted !== 'undefined' && reviewSubmitted) { %>
+          <div style="margin-top:20px; padding:14px 18px; border-radius:var(--radius-sm); background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.35); color:var(--success); font-size:14px;">
+            Отзыв отправлен на модерацию и появится на странице после проверки администратором.
+          </div>
+        <% } %>
+
+        <div class="card" style="padding:24px; margin-top:24px;">
+          <h3 style="font-size:1.15rem; margin-bottom:16px;">Оставить отзыв</h3>
+          <% if (typeof user !== 'undefined' && user) { %>
+            <form action="/mods/<%= mod.id %>/reviews" method="POST" data-validate>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <div class="form-group">
+                <label class="form-label" for="rating">Оценка</label>
+                <select id="rating" name="rating" class="form-select" required>
+                  <option value="5">5 — Отлично</option>
+                  <option value="4">4 — Хорошо</option>
+                  <option value="3">3 — Нормально</option>
+                  <option value="2">2 — Слабо</option>
+                  <option value="1">1 — Не работает</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="comment">Комментарий</label>
+                <textarea id="comment" name="comment" class="form-textarea" placeholder="Поделитесь впечатлениями о моде и установке..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+            </form>
+          <% } else { %>
+            <p style="color:var(--text-muted); margin-bottom:14px;">Чтобы оставить отзыв или добавить мод в избранное, войдите в аккаунт.</p>
+            <a href="/login" class="btn btn-secondary btn-sm">Войти в аккаунт</a>
+          <% } %>
+        </div>
       </section>
 
       <!-- Related Mods -->
@@ -214,6 +247,24 @@
           <span>Добавить в сборку</span>
         </button>
       </form>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <form action="/favorites/toggle/<%= mod.id %>" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn <%= (typeof isFavorited !== 'undefined' && isFavorited) ? 'btn-nsfw' : 'btn-outline' %> btn-block">
+            <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="<%= (typeof isFavorited !== 'undefined' && isFavorited) ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span><%= (typeof isFavorited !== 'undefined' && isFavorited) ? 'В избранном' : 'В избранное' %></span>
+          </button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="btn btn-outline btn-block">
+          <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span>В избранное</span>
+        </a>
+      <% } %>
       <% if (mod.source_url) { %>
         <a href="<%= mod.source_url %>" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-block">
           <svg class="ui-icon ui-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

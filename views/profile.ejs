@@ -101,17 +101,25 @@
       <% if (favorites && favorites.length > 0) { %>
         <div class="catalog-grid">
           <% favorites.forEach(function(mod) { %>
-            <a href="/mods/<%= mod.id %>" class="mod-card" style="text-decoration:none; color:inherit;">
-              <div class="mod-card-media">
+            <div class="mod-card">
+              <a href="/mods/<%= mod.id %>" class="mod-card-media" style="display:block;">
                 <% if (mod.image_url) { %>
                   <img src="<%= mod.image_url %>" alt="<%= mod.title %>" class="card-img" loading="lazy">
                 <% } %>
-              </div>
+                <span class="media-badge-left"><%= mod.game_title %></span>
+              </a>
               <div class="mod-card-body">
-                <div class="mod-card-title"><%= mod.title %></div>
-                <div class="mod-card-meta"><span><%= mod.game_title %></span></div>
+                <a href="/mods/<%= mod.id %>" class="mod-card-title"><%= mod.title %></a>
+                <div class="mod-card-meta"><span><%= mod.file_size_mb %> МБ</span></div>
               </div>
-            </a>
+              <div class="mod-card-actions">
+                <a href="/mods/<%= mod.id %>" class="btn btn-secondary btn-sm" style="flex:1;">Открыть</a>
+                <form action="/favorites/toggle/<%= mod.id %>" method="POST" style="flex:1;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-danger btn-sm btn-block">Убрать</button>
+                </form>
+              </div>
+            </div>
           <% }); %>
         </div>
       <% } else { %>
