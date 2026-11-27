@@ -62,6 +62,8 @@ app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.cartCount = req.session.cart ? req.session.cart.length : 0;
     res.locals.appName = 'HornyHo';
+    const { total } = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+    res.locals.registrationClosed = total >= MAX_USERS;
     res.locals.categories = db.prepare('SELECT * FROM categories').all();
     const p = req.path;
     res.locals.currentPage =
@@ -192,6 +194,9 @@ app.route('/login')
 app.route('/register')
     .get((req, res) => {
         if (req.session.user) return res.redirect('/profile');
+        if (res.locals.registrationClosed) {
+            return res.status(403).render('register', { step: 'form', formData: {} });
+        }
         res.render('register', { step: 'form', formData: {} });
     })
     .post(async (req, res) => {

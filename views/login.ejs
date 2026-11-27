@@ -48,7 +48,15 @@
     <div class="auth-divider">или</div>
 
     <div style="display:flex; gap:12px;">
-      <a href="/register" class="btn btn-secondary btn-block">Регистрация</a>
+      <% if (registrationClosed) { %>
+        <span class="btn btn-secondary btn-block registration-closed-control" title="Мы пока маленький проект, количество зарегистрированных аккаунтов ограничено :(" tabindex="0" role="note" aria-describedby="registrationClosedTooltip">
+          <span class="registration-closed-cross" aria-hidden="true">✕</span>
+          <span>Регистрация закрыта</span>
+          <span class="registration-closed-tooltip" id="registrationClosedTooltip" role="tooltip">Мы пока маленький проект, количество зарегистрированных аккаунтов ограничено :(</span>
+        </span>
+      <% } else { %>
+        <a href="/register" class="btn btn-secondary btn-block">Регистрация</a>
+      <% } %>
       <a href="/forgot-password" class="btn btn-ghost btn-block">Забыли пароль?</a>
     </div>
 

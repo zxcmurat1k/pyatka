@@ -30,7 +30,7 @@ Git workflow: NEVER commit directly to `main`. Always make changes on the active
 `users`, `categories`, `mods`, `modpacks`, `modpack_items`, `reviews`, `feedback`, `favorites`, `email_codes`.
 
 ## Global res.locals
-`csrfToken`, `user`, `cartCount`, `appName`, `categories`, `currentPage`.
+`csrfToken`, `user`, `cartCount`, `appName`, `categories`, `currentPage`, `registrationClosed`.
 
 ## Main HTTP routes
 - Public: `GET /`, `/catalog`, `/mods/:id`, `/about`, `/faq`, `/privacy`.

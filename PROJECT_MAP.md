@@ -53,6 +53,7 @@
 - `appName`: `HornyHo`.
 - `categories`: все категории БД.
 - `currentPage`: `index`, `catalog`, `builder`, `contacts`, `admin`, `profile`, `login` или пустая строка.
+- `registrationClosed`: `true`, если число пользователей достигло лимита 50.
 
 ## Активные функции
 - Регистрация с bcrypt и 6-значным OTP по email.

@@ -7,6 +7,13 @@
 
 <div class="auth-wrap">
   <div class="auth-card" data-fade>
+    <% if (typeof registrationClosed !== 'undefined' && registrationClosed) { %>
+      <div class="registration-closed-notice" role="status">
+        <span class="registration-closed-notice-cross" aria-hidden="true">✕</span>
+        <h1 class="auth-title">Регистрация закрыта</h1>
+        <p>Мы пока маленький проект, количество зарегистрированных аккаунтов ограничено :(</p>
+      </div>
+    <% } else { %>
     <h1 class="auth-title" style="display:flex; align-items:center; justify-content:center; gap:10px;">
       <svg class="ui-icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -94,6 +101,7 @@
 
     <div class="auth-divider">уже есть аккаунт?</div>
     <a href="/login" class="btn btn-secondary btn-block">Войти</a>
+    <% } %>
   </div>
 </div>
 
