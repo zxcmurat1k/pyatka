@@ -2009,6 +2009,71 @@ html[data-mode="nsfw"] .drawer-cat-link:hover {
   height: 1px;
   background: var(--border-subtle);
 }
+.registration-closed-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: not-allowed;
+  color: var(--danger);
+  border-color: rgba(255, 23, 68, 0.35);
+  background: rgba(255, 23, 68, 0.08);
+  text-align: center;
+}
+.registration-closed-cross,
+.registration-closed-notice-cross {
+  color: var(--danger);
+  font-weight: 800;
+}
+.registration-closed-tooltip {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  width: max-content;
+  max-width: min(280px, 85vw);
+  padding: 9px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+  pointer-events: none;
+}
+.registration-closed-control:hover .registration-closed-tooltip,
+.registration-closed-control:focus-visible .registration-closed-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+.registration-closed-notice {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 28px 20px;
+  border: 1px solid rgba(255, 23, 68, 0.3);
+  border-radius: var(--radius);
+  background: rgba(255, 23, 68, 0.07);
+  text-align: center;
+}
+.registration-closed-notice-cross {
+  font-size: 32px;
+  line-height: 1;
+}
+.registration-closed-notice p {
+  margin: 0;
+  color: var(--text-muted);
+}
 
 /* Profile */
 .profile-header {

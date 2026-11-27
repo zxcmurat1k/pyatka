@@ -10,6 +10,9 @@ const path = require('path');
 const db = require('./db/database');
 const { sendCodeEmail } = require('./utils/mailer');
 
+const MAX_USERS = 50;
+const REGISTRATION_LIMIT_ERROR = 'Регистрация временно закрыта: достигнут лимит участников тестирования (50 человек).';
+
 const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({
@@ -59,6 +62,8 @@ app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.cartCount = req.session.cart ? req.session.cart.length : 0;
     res.locals.appName = 'HornyHo';
+    const { total } = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+    res.locals.registrationClosed = total >= MAX_USERS;
     res.locals.categories = db.prepare('SELECT * FROM categories').all();
     const p = req.path;
     res.locals.currentPage =
@@ -189,6 +194,9 @@ app.route('/login')
 app.route('/register')
     .get((req, res) => {
         if (req.session.user) return res.redirect('/profile');
+        if (res.locals.registrationClosed) {
+            return res.status(403).render('register', { step: 'form', formData: {} });
+        }
         res.render('register', { step: 'form', formData: {} });
     })
     .post(async (req, res) => {
@@ -215,6 +223,11 @@ app.route('/register')
         const existingUser = db.prepare(`SELECT id FROM users WHERE LOWER(email) = ?`).get(email);
         if (existingUser) {
             return res.render('register', { step: 'form', formData, error: 'Аккаунт с таким email уже существует.' });
+        }
+
+        const { total } = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+        if (total >= MAX_USERS) {
+            return res.status(403).render('register', { step: 'form', formData, error: REGISTRATION_LIMIT_ERROR });
         }
 
         const now = Date.now();
@@ -265,6 +278,11 @@ app.post('/register/verify', (req, res) => {
     if (record.code !== code) {
         db.prepare(`UPDATE email_codes SET attempts = attempts + 1 WHERE id = ?`).run(record.id);
         return res.render('register', { step: 'verify', formData: { email }, error: `Неверный код. Осталось попыток: ${4 - record.attempts}.` });
+    }
+
+    const { total } = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+    if (total >= MAX_USERS) {
+        return res.status(403).render('register', { step: 'form', formData: { email }, error: REGISTRATION_LIMIT_ERROR });
     }
 
     try {
