@@ -10,6 +10,9 @@ const path = require('path');
 const db = require('./db/database');
 const { sendCodeEmail } = require('./utils/mailer');
 
+const MAX_USERS = 50;
+const REGISTRATION_LIMIT_ERROR = 'Регистрация временно закрыта: достигнут лимит участников тестирования (50 человек).';
+
 const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({
@@ -217,6 +220,11 @@ app.route('/register')
             return res.render('register', { step: 'form', formData, error: 'Аккаунт с таким email уже существует.' });
         }
 
+        const { total } = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+        if (total >= MAX_USERS) {
+            return res.status(403).render('register', { step: 'form', formData, error: REGISTRATION_LIMIT_ERROR });
+        }
+
         const now = Date.now();
         const prevCode = db.prepare(`SELECT * FROM email_codes WHERE email = ? AND purpose = 'register' ORDER BY id DESC LIMIT 1`).get(email);
         if (prevCode && (now - prevCode.created_at) < OTP_COOLDOWN_MS) {
@@ -265,6 +273,11 @@ app.post('/register/verify', (req, res) => {
     if (record.code !== code) {
         db.prepare(`UPDATE email_codes SET attempts = attempts + 1 WHERE id = ?`).run(record.id);
         return res.render('register', { step: 'verify', formData: { email }, error: `Неверный код. Осталось попыток: ${4 - record.attempts}.` });
+    }
+
+    const { total } = db.prepare('SELECT COUNT(*) AS total FROM users').get();
+    if (total >= MAX_USERS) {
+        return res.status(403).render('register', { step: 'form', formData: { email }, error: REGISTRATION_LIMIT_ERROR });
     }
 
     try {

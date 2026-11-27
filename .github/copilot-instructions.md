@@ -14,7 +14,7 @@ Git workflow: NEVER commit directly to `main`. Always make changes on the active
 - Never drop, wipe or recreate DB. Preserve 20 active mods.
 - Before a schema/data migration copy `db/modforge.db` to `db/modforge.db.bak` (or timestamped `.bak`), then use only `ALTER TABLE` or `CREATE TABLE IF NOT EXISTS`.
 - Never read, touch or overwrite `.env`.
-- Never edit/read legacy `assets/`; static site is in `public/` only.
+- The legacy `assets/` directory has been removed; do not recreate or reference it. Static site is in `public/` only.
 - Never scan `node_modules/`, `db/*.db`, `db/*.bak`, `public/uploads/`.
 - Restart only `pm2 restart hornyho`; never touch `tuna-tunnel`.
 

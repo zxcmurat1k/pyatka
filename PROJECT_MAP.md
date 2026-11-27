@@ -7,7 +7,7 @@
 - `server.js`: порт 3000, Helmet, express-session, rate-limit, CSRF, multer, auth, OTP и все HTTP-маршруты.
 - `db/database.js`: открывает `db/modforge.db`, применяет `db/schema.sql`, добавляет недостающий `mods.is_nsfw` через `ALTER TABLE`, создаёт `email_codes` через `CREATE TABLE IF NOT EXISTS`, гарантирует админа.
 - `utils/mailer.js`: Nodemailer; skeleton/fallback/smtp режимы для OTP-писем.
-- Статика только в `public/`: `public/css/style.css`, `public/js/script.js`, `public/images/`, `public/uploads/`. Папку `assets/` не читать и не менять.
+- Статика только в `public/`: `public/css/style.css`, `public/js/script.js`, `public/images/`, `public/uploads/`. Legacy-папка `assets/` удалена; не добавлять ссылки на неё и не восстанавливать её.
 
 ## Views
 - `index.ejs`, `catalog.ejs`, `mod_details.ejs`, `modpack_builder.ejs`
